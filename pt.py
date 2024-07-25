@@ -117,11 +117,11 @@ class Drawing:
     def draw_pixel(self):
         self.image.putpixel((self.cursor_x, self.cursor_y), self.color)
         if self.mirror_h:
-            self.image.putpixel((self.width - 1 - self.cursor_x, self.cursor_y), adjusted_color)
+            self.image.putpixel((self.width - 1 - self.cursor_x, self.cursor_y), self.color)
         if self.mirror_v:
-            self.image.putpixel((self.cursor_x, self.height - 1 - self.cursor_y), adjusted_color)
+            self.image.putpixel((self.cursor_x, self.height - 1 - self.cursor_y), self.color)
         if self.mirror_h and self.mirror_v:
-            self.image.putpixel((self.width - 1 - self.cursor_x, self.height - 1 - self.cursor_y), adjusted_color)
+            self.image.putpixel((self.width - 1 - self.cursor_x, self.height - 1 - self.cursor_y), self.color)
 
     def bucket_fill(self, x, y, new_color):
         if not (0 <= x < self.width and 0 <= y < self.height):
