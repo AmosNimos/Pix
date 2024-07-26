@@ -20,6 +20,8 @@ Did you hear that Pix supports color? That’s right—up to 8 glorious colors a
 - **Bucket Fill:** Rapidly fill areas with your chosen color, with even more excitement on the way!
 - **Mirror Tools:** Effortlessly mirror your creations, whether horizontally, vertically, or both!
 
+The source code of the project is in <a href="./pix.py">pix.py</a>
+
 ---
 
 Pix you ain't ready for it!
