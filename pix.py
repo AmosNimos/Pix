@@ -327,8 +327,6 @@ def handle_input(key, drawing):
     elif key == ord('r'):  # 'e' to save and quit
         drawing.reset_image()  # Reset canvas
     elif key == ord('u'):  # 'e' to save and quit
-        drawing.take_screenshot() # save current image to variable screenshot
-    elif key == ord('f'):  # 'e' to save and quit
         drawing.load_screenshot() # load variable screenshot to current image
     elif key == curses.KEY_UP or key == ord('w'):
         drawing.move_cursor('UP')
@@ -342,8 +340,11 @@ def handle_input(key, drawing):
         drawing.set_color(chr(key))
     elif key == ord(' '):
         drawing.pen_down = not drawing.pen_down
+        if drawing.pen_down:
+            drawing.take_screenshot() # save current image to variable screenshot
         #drawing.draw_pixel()
     elif key == ord('b'):  # Bucket fill
+        drawing.take_screenshot() # save current image to variable screenshot
         drawing.bucket_fill(drawing.cursor_x, drawing.cursor_y, drawing.color)
     elif key == ord('h'):
         drawing.toggle_horizontal_mirroring()
