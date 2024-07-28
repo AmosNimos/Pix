@@ -321,6 +321,8 @@ def handle_input(key, drawing):
 
     if key == ord('q'):
         return False  # Quit on 'q'
+    if key in map(ord, '0123456789'):
+        drawing.set_color(chr(key))
     elif key == ord('e'):  # 'e' to save and quit
         drawing.save_image(filename=drawing.filename)  # Save with default or user-provided filename
         return False
@@ -336,12 +338,15 @@ def handle_input(key, drawing):
         drawing.move_cursor('LEFT')
     elif key == curses.KEY_RIGHT or key == ord('d'):
         drawing.move_cursor('RIGHT')
-    elif key in map(ord, '0123456789'):
-        drawing.set_color(chr(key))
-    elif key == ord(' '):
+    if key == ord(' '):
         drawing.pen_down = not drawing.pen_down
         if drawing.pen_down:
             drawing.take_screenshot() # save current image to variable screenshot
+        #drawing.draw_pixel()
+    if key == ord('\n'):
+        drawing.pen_down = False
+        drawing.take_screenshot() # save current image to variable screenshot
+        drawing.draw_pixel()
         #drawing.draw_pixel()
     elif key == ord('b'):  # Bucket fill
         drawing.take_screenshot() # save current image to variable screenshot
