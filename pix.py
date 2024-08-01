@@ -428,3 +428,4 @@ args = parser.parse_args()
 curses.wrapper(main)
 
 
+drawing.save_image(filename=self.filename+".save")  # Save with default or user-provided filename
