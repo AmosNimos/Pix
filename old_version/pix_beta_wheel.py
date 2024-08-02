@@ -362,8 +362,6 @@ class Drawing:
 #            print(f"Invalid input: {e}")
 #            self.color_wheel()  # Retry if invalid input        
 
-    # use the color wheel from the color picker class
-
     def save_image(self, filename=None, confirm=None):
         curses.endwin()  # End curses mode to allow normal input
         if filename is None:
