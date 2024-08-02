@@ -1,6 +1,6 @@
 # PIX
 
-<img src="./pix_logo.png">
+<img src="./pix.png">
 
 Welcome to **Pix**, arguably the pinnacle of CLI pixel art tools!
 
