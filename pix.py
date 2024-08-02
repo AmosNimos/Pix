@@ -1,6 +1,7 @@
 import signal
 import argparse
 import curses
+import os
 from PIL import Image
 
 class ColorPicker:
@@ -121,7 +122,7 @@ class Drawing:
     def set_tty_mode(self):
         curses.setupterm()
         colors = curses.tigetnum("colors")
-        if (colors is not None and colors < 256):
+        if (colors != None and colors < 256):
             self.tty_mode = True
             print("tty")
 
@@ -192,6 +193,12 @@ class Drawing:
         if old_color == new_color:
             return
         self._bucket_fill(x, y, old_color, new_color)
+        if self.mirror_h:
+            self._bucket_fill(self.width - 1 - self.cursor_x, self.cursor_y, old_color, new_color)
+        if self.mirror_v:
+            self._bucket_fill(self.cursor_x, self.height - 1 - self.cursor_y, old_color, new_color)
+        if self.mirror_h and self.mirror_v:
+            self._bucket_fill(self.width - 1 - self.cursor_x, self.height - 1 - self.cursor_y, old_color, new_color)
 
     def _bucket_fill(self, x, y, old_color, new_color):
         stack = [(x, y)]
@@ -251,18 +258,18 @@ class Drawing:
                         if (r > g and r > b):
                             rr = int(r / 255 * 9)
                             color_id = self.get_closest_color_id(255, 0, 0)
-                            if rr is not 9:
+                            if rr != 9:
                                 char = str(rr)
                         if (g > r and g > b):
                             color_id = self.get_closest_color_id(0, 255, 0)
                             gg = int(g / 255 * 9)
-                            if gg is not 9:
+                            if gg != 9:
                                 char = str(gg)
                                 #char = str(gg)
                         if (b > r and b > g):
                             color_id = self.get_closest_color_id(0, 0, 255)
                             bb = int(b / 255 * 9)
-                            if bb is not 9:
+                            if bb != 9:
                                 char = str(bb)
                                 #char = str(bb)
                 elif img_x > 0 and img_x < self.width:
@@ -318,15 +325,15 @@ class Drawing:
             self.cursor_y = self.height // 2
 
 
-#    def color_wheel(self):
-#        curses.endwin()  # End curses mode to allow normal input
-#        # Could be a single input taking hex value instead
-#        r=input("R: ")
-#        g=input("G: ")
-#        b=input("B: ")
-#        self.color= (int(r),int(g),int(b))
-#        #curses.initscr()
-#        curses.setupterm()
+    def color_wheel(self):
+        curses.endwin()  # End curses mode to allow normal input
+        # Could be a single input taking hex value instead
+        r=input("R: ")
+        g=input("G: ")
+        b=input("B: ")
+        self.color= (int(r),int(g),int(b))
+        #curses.initscr()
+        curses.setupterm()
 
 #    def color_wheel(self):
 #        # Exit curses mode to allow normal input
@@ -428,6 +435,7 @@ def handle_input(key, drawing):
         drawing.redo_stack.clear()
 
     if key == ord('q'):
+        drawing.save_image('pix.save.0.png')
         return False  # Quit on 'q'
     if key in map(ord, '0123456789'):
         drawing.set_color(chr(key))
@@ -449,15 +457,18 @@ def handle_input(key, drawing):
     if key == ord(' '):
         drawing.pen_down = not drawing.pen_down
         if drawing.pen_down:
+            drawing.save_image('pix.save.0.png', "y")
             drawing.take_screenshot() # save current image to variable screenshot
         #drawing.draw_pixel()
     if key == ord('\n'):
         drawing.pen_down = False
+        drawing.save_image('pix.save.0.png', "y")
         drawing.take_screenshot() # save current image to variable screenshot
         drawing.draw_pixel()
         #drawing.draw_pixel()
     elif key == ord('b'):  # Bucket fill
         drawing.take_screenshot() # save current image to variable screenshot
+        drawing.save_image('pix.save.0.png', "y")
         drawing.bucket_fill(drawing.cursor_x, drawing.cursor_y, drawing.color)
     elif key == ord('h'):
         drawing.toggle_horizontal_mirroring()
@@ -520,11 +531,14 @@ def main(stdscr):
     drawing.update_cursor()  # Initial cursor update
 
     def signal_handler(sig, frame):
-        drawing.save_image('drawing.png')
+        if not os.path.exists('pix.save."+str(sig)+".png'):
+            drawing.save_image('pix.save."+str(sig)+".png', "y")
         curses.endwin()
         exit(0)
 
     signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGHUP, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
 
     while True:
         stdscr.refresh()
@@ -546,4 +560,5 @@ args = parser.parse_args()
 
 curses.wrapper(main)
 
-
+if os.path.exists('pix.save.0.png'):
+    os.remove('pix.save.0.png')
