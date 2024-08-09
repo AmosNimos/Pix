@@ -105,24 +105,50 @@ class Drawing:
         self.redo_stack = []
         self.screenshots = []  # Change to a list to store multiple screenshots
         self.current_state = self.take_screenshot()
+        # maybe would be possible to refactore without including the pair only using the index in the array? allowing for less manual initalisations
         self.colors = {
-            '0': (0, 0, 0),
-            '1': (255, 255, 255),
-            '2': (255, 0, 0),
-            '3': (0, 255, 0),
-            '4': (0, 0, 255),
-            '5': (255, 255, 0),
-            '6': (0, 255, 255),
-            '7': (255, 0, 255),
-            '8': (128, 128, 128),
-            '9': (128, 0, 0),
-            '10': (0, 128, 0),
-            '11': (0, 0, 128),
-            '12': (128, 128, 0),
-            '13': (0, 128, 128),
-#            '14': (200, 0, 200),
-#            '15': (55, 55, 55),
-#            '16': (200, 100, 50),
+            '0': (0, 0, 0), # black
+            '1': (255, 255, 255), # white
+
+            '2': (255, 0, 0), # red
+            '3': (0, 255, 0), # green
+            '4': (0, 0, 255), # blue
+
+            '5': (255, 255, 0), # yellow
+            '6': (0, 255, 255), # cyan
+            '7': (255, 0, 255), # magenta
+
+            '8': (255, 128, 128), # Red
+            '9': (128, 255, 128), # Green
+            '10': (128, 128, 255), # Blue
+            '11': (255, 255, 128), # Yellow
+            '12': (128, 255, 255), # Cyan
+            '13': (255, 128, 255), # Purple
+            
+            '14': (255, 64, 64), # Red
+            '15': (64, 255, 64), # Green
+            '16': (64, 64, 255), # Blue
+            '17': (255, 255, 64), # Yellow
+            '18': (64, 255, 255), # Cyan
+            '19': (255, 64, 255), # Purple
+            
+            '20': (128, 0, 0), # Red
+            '21': (0, 128, 0), # Green
+            '22': (0, 0, 128), # Blue            
+            '23': (128, 128, 0), # Yellow
+            '24': (0, 128, 128), # Cyan 
+            '25': (128, 0, 128), # Purple
+
+            '26': (64, 0, 0), # Red
+            '27': (0, 64, 0), # Green
+            '28': (0, 0, 64), # Blue
+            '29': (64, 64, 0), # Yellow
+            '30': (0, 64, 64), # Cyan
+            '31': (64, 0, 64), # Purple
+            
+            '32': (128, 128, 128), # gray
+            '33': (64, 64, 64), # gray
+            '34': (32, 32, 32), # gray
      }
         
         #curses.endwin()  # End curses mode to allow normal input
@@ -223,13 +249,17 @@ class Drawing:
             self.color = self.colors[str(self.color_pair)]
             self.color_pair+=1
         else:
-            return -1
+            self.color_pair=1
+            self.color = self.colors[str(self.color_pair)]
+            
     def decrease_color(self):
-        if self.color_pair > 0:
+        colors_count=int(len(self.colors))
+        if self.color_pair > 1:
             self.color_pair-=1
             self.color = self.colors[str(self.color_pair-1)]
         else:
-            return -1
+            self.color_pair=colors_count
+            #self.color = self.colors[str(self.color_pair+1)]
         #self.color_pair = self.color_pairs[self.color_pair]
 
     def draw_pixel(self):
