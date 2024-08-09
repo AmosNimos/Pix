@@ -1,8 +1,29 @@
+# Pixel-art Independent of X11 or P.I.X for short
+
+#########################################
+# TODO:                                 #
+#########################################
+#                                       #
+# - Option to enter hex as color        #
+# - Full 256 color preview in cli       #
+# - Grid colorwheel color picker        #
+# - Save as ascii                       #
+# - Save as colored ascii-escape code   #
+# - Line Pen                            #
+# - Select copy and paste               #
+# - Accurate warp boundary colors arrow #
+# - Image filter                        #
+# - Animation frame                     #
+# - Layer guides and decals             #
+#                                       #
+#########################################
+
 import signal
 import argparse
 import curses
 import os
 from PIL import Image
+from random import randint
 
 class ColorPicker:
     def __init__(self):
@@ -55,10 +76,17 @@ class ColorPicker:
             draw_color_grid(selected_y, selected_x)
 
         curses.endwin()
-        print(f"Selected color: {self.color}")
+        #print(f"Selected color: {self.color}")
 
 class Drawing:
     def __init__(self, stdscr, width=64, height=64, view_size=64, filename=None, background=-1):
+
+        # for line pen:
+        self.rect_pen=False
+        self.x1=-1
+        self.x2=-1
+        self.y1=-1
+        self.y2=-1     
         self.tty_mode = False
         self.background_color=background
         self.filename = filename
@@ -86,26 +114,38 @@ class Drawing:
             '5': (255, 255, 0),
             '6': (0, 255, 255),
             '7': (255, 0, 255),
-            '8': (192, 192, 192),
-            '9': (128, 128, 128),
-            '9': (128, 128, 128),
-        }
+            '8': (128, 128, 128),
+            '9': (128, 0, 0),
+            '10': (0, 128, 0),
+            '11': (0, 0, 128),
+            '12': (128, 128, 0),
+            '13': (0, 128, 128),
+#            '14': (200, 0, 200),
+#            '15': (55, 55, 55),
+#            '16': (200, 100, 50),
+     }
         
-        # Add 216 colors in a 6x6x6 color cube
-        for i in range(6):
-            for j in range(6):
-                for k in range(6):
-                    index = 16 + (i * 36) + (j * 6) + k
-                    r = i * 51
-                    g = j * 51
-                    b = k * 51
-                    self.colors[str(index)] = (r, g, b)
+        #curses.endwin()  # End curses mode to allow normal input
+        #print(len(self.colors))
+        #exit()
 
+#       When generating all the color need a way to associate the color_pair index with the rgb values
+        # Add 216 colors in a 6x6x6 color cube
+#        for i in range(6):
+#            for j in range(6):
+#                for k in range(6):
+#                    index = 16 + (i * 36) + (j * 6) + k
+#                    r = i * 51
+#                    g = j * 51
+#                    b = k * 51
+#                    self.colors[str(index)] = str(index): (r, g, b)
+                    #print(self.colors[str(index)])
+        #exit()
         # Add 24 grayscale colors
-        for i in range(24):
-            gray = i * 10 + 8
-            index = 232 + i
-            self.colors[str(index)] = (gray, gray, gray)
+#        for i in range(24):
+#            gray = i * 10 + 8
+#            index = 232 + i
+#            self.colors[str(index)] = (gray, gray, gray)
         
         self.set_tty_mode()
         self.color_pairs = {}
@@ -124,7 +164,7 @@ class Drawing:
         colors = curses.tigetnum("colors")
         if (colors != None and colors < 256):
             self.tty_mode = True
-            print("tty")
+            #print("tty")
 
     def initialize_colors(self):
         if self.tty_mode:
@@ -177,6 +217,21 @@ class Drawing:
         self.color = self.colors[color_key]
         self.color_pair = self.color_pairs[color_key]
 
+    def increase_color(self):
+        colors_count=int(len(self.colors))
+        if self.color_pair < colors_count:
+            self.color = self.colors[str(self.color_pair)]
+            self.color_pair+=1
+        else:
+            return -1
+    def decrease_color(self):
+        if self.color_pair > 0:
+            self.color_pair-=1
+            self.color = self.colors[str(self.color_pair-1)]
+        else:
+            return -1
+        #self.color_pair = self.color_pairs[self.color_pair]
+
     def draw_pixel(self):
         self.image.putpixel((self.cursor_x, self.cursor_y), self.color)
         if self.mirror_h:
@@ -185,6 +240,67 @@ class Drawing:
             self.image.putpixel((self.cursor_x, self.height - 1 - self.cursor_y), self.color)
         if self.mirror_h and self.mirror_v:
             self.image.putpixel((self.width - 1 - self.cursor_x, self.height - 1 - self.cursor_y), self.color)
+
+    def set_pixel(self,x,y,color=-1):
+        if color == -1:
+            color=self.color
+        self.image.putpixel((x, y), color)
+        if self.mirror_h:
+            self.image.putpixel((self.width - 1 - x, y), color)
+        if self.mirror_v:
+            self.image.putpixel((x, self.height - 1 - y), color)
+        if self.mirror_h and self.mirror_v:
+            self.image.putpixel((self.width - 1 - x, self.height - 1 - y), color)
+
+
+    def noise_texture(self):
+        for x in range(self.width):
+            for y in range(self.height):
+                color=(randint(0,25)*10,randint(0,25)*10,randint(0,25)*10)
+                self.set_pixel(x,y,color)
+    
+    def draw_rect(self):
+
+        if (self.rect_pen):
+            self.x2=self.cursor_x
+            self.y2=self.cursor_y
+            #print("end:x"+str(self.x2)+",y"+str(self.y2))
+
+            # Make work in other directions
+            if self.x1 > self.x2:
+                xx=self.x1
+                self.x1=self.x2
+                self.x2=xx
+            if self.y1 > self.y2:
+                yy=self.y1
+                self.y1=self.y2
+                self.y2=yy
+
+            self.x2+=1
+            self.y2+=1
+            for x in range(self.x1,self.x2):
+                for y in range(self.y1,self.y2):
+                    #print("placing:x"+str(x)+",y"+str(y))
+                    self.set_pixel(x,y)
+                    #self.image.putpixel((x, y), self.color)
+                    
+            self.rect_pen=False
+            self.x1=-1
+            self.x2=-1
+            self.y1=-1
+            self.y2=-1
+        else:
+            self.x1=self.cursor_x 
+            self.y1=self.cursor_y
+            self.rect_pen=True
+            #print("start line:x"+str(self.x1)+",y"+str(self.y1))
+#        if self.mirror_h:
+#            self.image.putpixel((self.width - 1 - self.cursor_x, self.cursor_y), self.color)
+#        if self.mirror_v:
+#            self.image.putpixel((self.cursor_x, self.height - 1 - self.cursor_y), self.color)
+#        if self.mirror_h and self.mirror_v:
+#            self.image.putpixel((self.width - 1 - self.cursor_x, self.height - 1 - self.cursor_y), self.color)
+
 
     def bucket_fill(self, x, y, new_color):
         if not (0 <= x < self.width and 0 <= y < self.height):
@@ -233,54 +349,71 @@ class Drawing:
                 img_x = start_x + x
                 img_y = start_y + y
                 char=" "
+#                if self.rect_pen and img_x == self.x1 and img_y == self.y1:
+#                    color_id = self.get_closest_color_id(255, 255, 255)
+#                    char = 'X'
                 if 0 <= img_x < self.width and 0 <= img_y < self.height:
+                    # get the rgb value for the current selected pixel
                     r, g, b = self.image.getpixel((img_x, img_y))
+                    rgb_color = (r,g,b)
+
+                    # set the color id to black if blank
                     if (r + g + b == 0):
                         color_id = -1
                     else:
                         color_id = self.get_closest_color_id(r, g, b)
 
+                    # Assigning the char
                     if img_y == 0 or img_y == self.height-1 or img_x == 0 or img_x == self.width-1:
-                        char = '.'
+                        if (r + g + b == 0):
+                            char = '.'
+                        else:
+                            char = '█'
                     elif (img_x == int(self.width / 2) and self.mirror_h):
-                        # Vertical guideline
+                        # Vertical guideline for mirror mode
                         char = '|'
                     elif (img_y == int(self.height / 2) and self.mirror_v):
-                        # Horizontal guideline
+                        # Horizontal guideline for mirror mode
                         char = '-'
                         if (r + g + b == 0):
                             color_id = -1
-                        else:
-                            color_id = self.get_closest_color_id(r, g, b)
+                        #else:
+                            #color_id = self.get_closest_color_id(r, g, b)
                     else:
                         char = '█'
                         color_id = self.get_closest_color_id(r, g, b)
-                        if (r > g and r > b):
-                            rr = int(r / 255 * 9)
-                            color_id = self.get_closest_color_id(255, 0, 0)
-                            if rr != 9:
-                                char = str(rr)
-                        if (g > r and g > b):
-                            color_id = self.get_closest_color_id(0, 255, 0)
-                            gg = int(g / 255 * 9)
-                            if gg != 9:
-                                char = str(gg)
-                                #char = str(gg)
-                        if (b > r and b > g):
-                            color_id = self.get_closest_color_id(0, 0, 255)
-                            bb = int(b / 255 * 9)
-                            if bb != 9:
-                                char = str(bb)
-                                #char = str(bb)
+                        if self.tty_mode:
+                            if (r > g and r > b):
+                                rr = int(r / 255 * 9)
+                                color_id = self.get_closest_color_id(255, 0, 0)
+                                if rr != 9:
+                                    char = str(rr)
+                            if (g > r and g > b):
+                                color_id = self.get_closest_color_id(0, 255, 0)
+                                gg = int(g / 255 * 9)
+                                if gg != 9:
+                                    char = str(gg)
+                                    #char = str(gg)
+                            if (b > r and b > g):
+                                color_id = self.get_closest_color_id(0, 0, 255)
+                                #self.color_pair=
+                                bb = int(b / 255 * 9)
+                                if bb != 9:
+                                    char = str(bb)
+                                    #char = str(bb)
+                        if self.rect_pen: 
+                            if img_x >= self.x1 and img_y >= self.y1 and img_x <= self.cursor_x and img_y <= self.cursor_y or img_x <= self.x1 and img_y <= self.y1 and img_x >= self.cursor_x and img_y >= self.cursor_y or img_x >= self.x1 and img_y <= self.y1 and img_x <= self.cursor_x and img_y >= self.cursor_y or img_x <= self.x1 and img_y >= self.y1 and img_x >= self.cursor_x and img_y <= self.cursor_y:
+                                char = 'x'
+                                color_id=self.color_pair
                 elif img_x > 0 and img_x < self.width:
                         color_id=-1
                         if (img_y == -1):
                             r, g, b = self.image.getpixel((img_x, self.height-1))
-                            color_id = self.get_closest_color_id(r, g, b)
+                            #color_id = self.get_closest_color_id(r, g, b)
                             char = '▲'
                         elif (img_y == self.height):
                             r, g, b = self.image.getpixel((img_x, 0))
-                            color_id = self.get_closest_color_id(r, g, b)
+                            #color_id = self.get_closest_color_id(r, g, b)
                             char = '▼'
                         else:
                             char = ' '
@@ -288,11 +421,11 @@ class Drawing:
                         color_id=-1
                         if (img_x == -1):
                             r, g, b = self.image.getpixel((self.width-1, img_y))
-                            color_id = self.get_closest_color_id(r, g, b)
+                            #color_id = self.get_closest_color_id(r, g, b)
                             char = '◀'
                         elif (img_x == self.width):
                             r, g, b = self.image.getpixel((0, img_y))
-                            color_id = self.get_closest_color_id(r, g, b)
+                            #color_id = self.get_closest_color_id(r, g, b)
                             char = '▶'
                         else:
                             char = ' '
@@ -303,13 +436,40 @@ class Drawing:
                 try:
                     if color_id != -1:
                         # Color character only
+                        #if self.tty_mode or not self.tty_mode:
                         self.stdscr.addch(y, x, char, curses.color_pair(color_id))
+                        #else:
+                        #    self.stdscr.addch(y, x, "z", curses.color_pair(12))
                     else:
                         # Default color
                         self.stdscr.addch(y, x, char)
                 except curses.error:
                     pass
 
+
+#    def get_closest_color_id(self, r, g, b):
+#        dif=0
+#        for key, color in self.colors.items():
+#            # this is a very dumb way of getting the dif value
+#            if color[0]>r:
+#                new_dif=color[0]-r
+#            else:
+#                new_dif=r-color[0]
+#            if color[1]>g:
+#                new_dif=color[1]-g
+#            else:
+#                new_dif=g-color[1]
+#            if color[2]>b:
+#                new_dif=color[2]-b
+#            else:
+#                new_dif=b-color[2]
+#
+#            #if color == (r, g, b):
+#            if new_dif<dif or dif==0:
+#                closest_color=self.color_pairs[key]
+#                dif+new_dif
+#        return closest_color
+        #return -1
 
     def get_closest_color_id(self, r, g, b):
         for key, color in self.colors.items():
@@ -333,6 +493,9 @@ class Drawing:
         b=input("B: ")
         self.color= (int(r),int(g),int(b))
         #curses.initscr()
+        color_id=self.get_closest_color_id(int(r),int(g),int(b))
+        
+        #self.set_color(color_id)
         curses.setupterm()
 
 #    def color_wheel(self):
@@ -371,9 +534,9 @@ class Drawing:
 
     # use the color wheel from the color picker class
 
-    def save_image(self, filename=None, confirm=None):
-        curses.endwin()  # End curses mode to allow normal input
+    def save_image(self, filename=None, confirm="n"):
         if filename is None:
+            curses.endwin()  # End curses mode to allow normal input
             filename = input("Enter filename (default 'out.png'): ").strip()
             if not filename:
                 filename = "out.png"
@@ -384,10 +547,11 @@ class Drawing:
             #curses.setupterm()  # Restart curses mode
             confirm="y"
 
-        if confirm is None:
+        if str(confirm.lower()) == "n":
+            curses.endwin()  # End curses mode to allow normal input
             confirm = input("Save changes to "+str(filename)+"? (y/N): ").strip()            
 
-        if confirm.lower() == "y":
+        if str(confirm.lower()) == "y":
             self.image.save(filename)
 
 
@@ -435,15 +599,21 @@ def handle_input(key, drawing):
         drawing.redo_stack.clear()
 
     if key == ord('q'):
-        drawing.save_image('pix.save.0.png')
+        drawing.save_image('pix.save.png')
+        return False  # Quit on 'q'
+    if key == ord('Q'):
+        drawing.save_image('pix.save.png', confirm="y")
         return False  # Quit on 'q'
     if key in map(ord, '0123456789'):
         drawing.set_color(chr(key))
     elif key == ord('e'):  # 'e' to save and quit
         drawing.save_image(filename=drawing.filename)  # Save with default or user-provided filename
         return False
-    elif key == ord('r'):  # 'e' to save and quit
-        drawing.reset_image()  # Reset canvas
+    elif key == ord('e'):  # 'e' to save and quit
+        drawing.save_image(filename=drawing.filename)  # Save with default or user-provided filename
+        return False
+    elif key == ord('z'):  # 'e' to save and quit
+        drawing.hex_picker()  # Reset canvas
     elif key == ord('u'):  # 'e' to save and quit
         drawing.load_screenshot() # load variable screenshot to current image
     elif key == curses.KEY_UP or key == ord('w'):
@@ -457,40 +627,53 @@ def handle_input(key, drawing):
     if key == ord(' '):
         drawing.pen_down = not drawing.pen_down
         if drawing.pen_down:
-            drawing.save_image('pix.save.0.png', "y")
+            drawing.save_image('pix.save.0.png', confirm="y")
             drawing.take_screenshot() # save current image to variable screenshot
         #drawing.draw_pixel()
     if key == ord('\n'):
         drawing.pen_down = False
-        drawing.save_image('pix.save.0.png', "y")
+        drawing.save_image('pix.save.0.png', confirm="y")
         drawing.take_screenshot() # save current image to variable screenshot
         drawing.draw_pixel()
-        #drawing.draw_pixel()
+    if key == ord('l'):
+        drawing.pen_down = False
+        drawing.save_image('pix.save.0.png', confirm="y")
+        drawing.take_screenshot() # save current image to variable screenshot
+        drawing.draw_rect()            
     elif key == ord('b'):  # Bucket fill
         drawing.take_screenshot() # save current image to variable screenshot
-        drawing.save_image('pix.save.0.png', "y")
+        drawing.save_image('pix.save.0.png', confirm="y")
         drawing.bucket_fill(drawing.cursor_x, drawing.cursor_y, drawing.color)
     elif key == ord('h'):
         drawing.toggle_horizontal_mirroring()
     elif key == ord('v'):
         drawing.toggle_vertical_mirroring()
-    elif key == ord('l'):
+    elif key == ord('c'):
         drawing.color_wheel()
-    elif key == ord('-'):  # Decrease brightness
-        r, g, b = drawing.color
-        drawing.color = (
-            max(0, r - 25),
-            max(0, g - 25),
-            max(0, b - 25)
-        )
-        
-    elif key == ord('+'):  # Increase brightness
-        r, g, b = drawing.color
-        drawing.color = (
-            min(255, r + 25),
-            min(255, g + 25),
-            min(255, b + 25)
-        )    
+    elif key == ord('n'):
+        drawing.noise_texture()
+    if key == ord('='):
+        #drawing.color_pair+=1
+        drawing.increase_color()
+    if key == ord('-'):
+        #drawing.color_pair-=1
+        drawing.decrease_color()
+        #drawing.set_color(chr(str(drawing.color_pair)))
+#    elif key == ord('-'):  # Decrease brightness
+#        r, g, b = drawing.color
+#        drawing.color = (
+#            max(0, r - 25),
+#            max(0, g - 25),
+#            max(0, b - 25)
+#        )
+#        
+#    elif key == ord('+'):  # Increase brightness
+#        r, g, b = drawing.color
+#        drawing.color = (
+#            min(255, r + 25),
+#            min(255, g + 25),
+#            min(255, b + 25)
+#        )    
         
     # Drawing logic if pen is down
     if drawing.pen_down:
@@ -531,8 +714,8 @@ def main(stdscr):
     drawing.update_cursor()  # Initial cursor update
 
     def signal_handler(sig, frame):
-        if not os.path.exists('pix.save."+str(sig)+".png'):
-            drawing.save_image('pix.save."+str(sig)+".png', "y")
+        if not os.path.exists("pix.save."+str(sig)+".png"):
+            drawing.save_image("pix.save."+str(sig)+".png", "y")
         curses.endwin()
         exit(0)
 
