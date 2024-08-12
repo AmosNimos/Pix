@@ -82,6 +82,7 @@ class Drawing:
     def __init__(self, stdscr, width=64, height=64, view_size=64, filename=None, background=-1):
 
         # for line pen:
+        self.palette_id=0
         self.rect_pen=False
         self.x1=-1
         self.x2=-1
@@ -109,46 +110,45 @@ class Drawing:
         self.colors = {
             '0': (0, 0, 0), # black
             '1': (255, 255, 255), # white
+            '2': (170, 170, 170), # gray
+            '3': (128, 128, 128), # gray
+            '4': (64, 64, 64), # gray
+            '5': (32, 32, 32), # gray
 
-            '2': (255, 0, 0), # red
-            '3': (0, 255, 0), # green
-            '4': (0, 0, 255), # blue
+            '6': (255, 0, 0), # red
+            '7': (0, 255, 0), # green
+            '8': (0, 0, 255), # blue
+            '9': (255, 255, 0), # yellow
+            '10': (0, 255, 255), # cyan
+            '11': (255, 0, 255), # magenta
 
-            '5': (255, 255, 0), # yellow
-            '6': (0, 255, 255), # cyan
-            '7': (255, 0, 255), # magenta
-
-            '8': (255, 128, 128), # Red
-            '9': (128, 255, 128), # Green
-            '10': (128, 128, 255), # Blue
-            '11': (255, 255, 128), # Yellow
-            '12': (128, 255, 255), # Cyan
-            '13': (255, 128, 255), # Purple
+            '12': (255, 128, 128), # Red
+            '13': (128, 255, 128), # Green
+            '14': (128, 128, 255), # Blue
+            '15': (255, 255, 128), # Yellow
+            '16': (128, 255, 255), # Cyan
+            '17': (255, 128, 255), # Purple
             
-            '14': (255, 64, 64), # Red
-            '15': (64, 255, 64), # Green
-            '16': (64, 64, 255), # Blue
-            '17': (255, 255, 64), # Yellow
-            '18': (64, 255, 255), # Cyan
-            '19': (255, 64, 255), # Purple
+            '18': (255, 64, 64), # Red
+            '19': (64, 255, 64), # Green
+            '20': (64, 64, 255), # Blue
+            '21': (255, 255, 64), # Yellow
+            '22': (64, 255, 255), # Cyan
+            '23': (255, 64, 255), # Purple
             
-            '20': (128, 0, 0), # Red
-            '21': (0, 128, 0), # Green
-            '22': (0, 0, 128), # Blue            
-            '23': (128, 128, 0), # Yellow
-            '24': (0, 128, 128), # Cyan 
-            '25': (128, 0, 128), # Purple
+            '24': (128, 0, 0), # Red
+            '25': (0, 128, 0), # Green
+            '26': (0, 0, 128), # Blue            
+            '27': (128, 128, 0), # Yellow
+            '28': (0, 128, 128), # Cyan 
+            '29': (128, 0, 128), # Purple
 
             '26': (64, 0, 0), # Red
             '27': (0, 64, 0), # Green
             '28': (0, 0, 64), # Blue
             '29': (64, 64, 0), # Yellow
             '30': (0, 64, 64), # Cyan
-            '31': (64, 0, 64), # Purple
-            
-            '32': (128, 128, 128), # gray
-            '33': (64, 64, 64), # gray
-            '34': (32, 32, 32), # gray
+            '31': (64, 0, 64), # Purple            
      }
         
         #curses.endwin()  # End curses mode to allow normal input
@@ -240,8 +240,8 @@ class Drawing:
             self.cursor_x = (self.cursor_x + 1) % self.width
 
     def set_color(self, color_key):
-        self.color = self.colors[color_key]
-        self.color_pair = self.color_pairs[color_key]
+        self.color = self.colors[str(int(color_key)+self.palette_id)]
+        self.color_pair = self.color_pairs[str(int(color_key)+self.palette_id)]
 
     def increase_color(self):
         colors_count=int(len(self.colors))
@@ -642,8 +642,8 @@ def handle_input(key, drawing):
     elif key == ord('e'):  # 'e' to save and quit
         drawing.save_image(filename=drawing.filename)  # Save with default or user-provided filename
         return False
-    elif key == ord('z'):  # 'e' to save and quit
-        drawing.hex_picker()  # Reset canvas
+    #elif key == ord('z'):  # 'e' to save and quit
+    #    drawing.hex_picker()  # Reset canvas
     elif key == ord('u'):  # 'e' to save and quit
         drawing.load_screenshot() # load variable screenshot to current image
     elif key == curses.KEY_UP or key == ord('w'):
@@ -685,9 +685,16 @@ def handle_input(key, drawing):
     if key == ord('='):
         #drawing.color_pair+=1
         drawing.increase_color()
+
+        # for palette selection
+#        if(drawing.palette_id<24):
+#            drawing.palette_id+=6
+#        else:
+#            drawing.palette_id=0
     if key == ord('-'):
         #drawing.color_pair-=1
         drawing.decrease_color()
+        #drawing.palette_id-=1
         #drawing.set_color(chr(str(drawing.color_pair)))
 #    elif key == ord('-'):  # Decrease brightness
 #        r, g, b = drawing.color
