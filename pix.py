@@ -9,64 +9,12 @@ from random import randint
 import math
 from collections import Counter
 
-class ColorPicker:
-    def __init__(self):
-        self.color = (0, 0, 0)
-        self.screen = curses.initscr()
-        curses.start_color()
-        curses.curs_set(0)
-        self.screen.keypad(True)
-
-        # Initialize all 256 colors
-        for i in range(0, 256):
-            curses.init_pair(i, i, 0)
-
-    def hex_prompt(self):
-        max_y, max_x = self.screen.getmaxyx()
-        rows = 16  # Number of rows in the color grid
-        cols = 16  # Number of columns in the color grid
-
-        def draw_color_grid(selected_y, selected_x):
-            for y in range(rows):
-                for x in range(cols):
-                    color_index = y * cols + x
-                    if color_index < 256:
-                        if y == selected_y and x == selected_x:
-                            self.screen.addstr(y, x * 3, "  ", curses.color_pair(color_index) | curses.A_REVERSE)
-                        else:
-                            self.screen.addstr(y, x * 3, "  ", curses.color_pair(color_index))
-            self.screen.refresh()
-
-        selected_y, selected_x = 0, 0
-        draw_color_grid(selected_y, selected_x)
-
-        while True:
-            key = self.screen.getch()
-            if key == curses.KEY_UP:
-                selected_y = (selected_y - 1) % rows
-            elif key == curses.KEY_DOWN:
-                selected_y = (selected_y + 1) % rows
-            elif key == curses.KEY_LEFT:
-                selected_x = (selected_x - 1) % cols
-            elif key == curses.KEY_RIGHT:
-                selected_x = (selected_x + 1) % cols
-            elif key == ord('q'):  # Press 'q' to quit
-                break
-            elif key == ord('\n'):  # Press 'Enter' to select color
-                color_index = selected_y * cols + selected_x
-                self.color = curses.color_content(color_index)
-                break
-
-            draw_color_grid(selected_y, selected_x)
-
-        curses.endwin()
-        #print(f"Selected color: {self.color}")
-
 class Drawing:
     def __init__(self, stdscr, width=64, height=64, view_size=64, filename=None, background=0):
         self.stdscr = stdscr
         # for line pen:
         self.rect_pen=False
+        self.tool_id=0
         # for x2 and y2 you could use cursor_x and cursor_y I think.
         self.x1=self.x2=self.y1=self.y2=-1     
         self.background_color=background
@@ -136,7 +84,7 @@ class Drawing:
             for i, line in enumerate(file):
                 hex_color = line.strip()
                 rgb_tuple = self.hex_to_rgb(hex_color)
-                self.colors[i+1] = rgb_tuple
+                self.colors[i+2] = rgb_tuple
 
     def initialize_colors(self):
         curses.start_color()
@@ -208,7 +156,7 @@ class Drawing:
             self.image.putpixel((self.width - 1 - x, self.height - 1 - y), color)
 
     def draw_rect(self):
-        if self.rect_pen:
+        if self.pen_down:
             self.x2, self.y2 = self.cursor_x, self.cursor_y
             x1, x2 = sorted([self.x1, self.x2])
             y1, y2 = sorted([self.y1, self.y2])
@@ -218,10 +166,10 @@ class Drawing:
             self.reset_rect()
         else:
             self.x1, self.y1 = self.cursor_x, self.cursor_y
-            self.rect_pen = True
+            self.pen_down = True
 
     def reset_rect(self):
-        self.rect_pen = False
+        self.pen_down = False
         self.x1 = self.x2 = self.y1 = self.y2 = 0
 
     def bucket_fill(self, x, y, new_color):
@@ -257,15 +205,18 @@ class Drawing:
         self.display_view()
                                         
         if (self.pen_down):
-            char='•'
-        else:
             char='◘'
+        else:
+            char='•'
 
         if self.color_pair != 1: # if black turn to white (cause black on black ain't visible)
             color = curses.color_pair(self.color_pair) # set to active color
         else:
             color = curses.color_pair(2) # set to white
-            char='X'
+            if (self.pen_down):
+                char='X'
+            else:
+                char='x'
 
 
         self.stdscr.addch(self.view_size // 2, self.view_size // 2, char, color | curses.A_BLINK)
@@ -373,10 +324,11 @@ class Drawing:
                     else:
                         char = '█'
                         color_id = closest
-                        if self.rect_pen: 
+                        # rect pen selection
+                        if self.tool_id==1 and self.pen_down: 
                             if img_x >= self.x1 and img_y >= self.y1 and img_x <= self.cursor_x and img_y <= self.cursor_y or img_x <= self.x1 and img_y <= self.y1 and img_x >= self.cursor_x and img_y >= self.cursor_y or img_x >= self.x1 and img_y <= self.y1 and img_x <= self.cursor_x and img_y >= self.cursor_y or img_x <= self.x1 and img_y >= self.y1 and img_x >= self.cursor_x and img_y <= self.cursor_y:
                                 char = 'x'
-                                color_id=self.color_pair
+                                color_id=self.color_pair+1
                 elif img_x > 0 and img_x < self.width:
                         if len(self.colors) < 64:
                             color_id=3
@@ -427,16 +379,22 @@ class Drawing:
                 # pbar Draw pallet bar
                 offset_y=1
                 offset_x=3
-                for i in range(2,11):
+                for i in range(1,11):
                     index=i
                     if self.color_pair==index:
                         # active color
-                        char="█"
+                        # chars: •█
+                        char="•"
                         #self.stdscr.addstr(5+i, 7, str(self.colors[index-1])+", "+str(i-1), curses.color_pair(0))
                     else:
                         char=str(i-1)
                         #self.stdscr.addstr(5+i, 7, str(self.colors[index-1])+", "+str(index)+", "+str(i-1), curses.color_pair(0))
-                    self.stdscr.addch(offset_y+i, offset_x, char, curses.color_pair(index))
+
+                    # make black visible
+                    if index > 1:
+                        self.stdscr.addch(offset_y+i, offset_x, char, curses.color_pair(index) | curses.A_REVERSE)
+                    else:
+                        self.stdscr.addch(offset_y+i, offset_x, char, curses.color_pair(2))
                     
 
                 # default black and white
@@ -484,29 +442,31 @@ class Drawing:
 
 
     def hex_prompt(self):
-        curses.endwin()  # End curses mode to allow normal input
-        hex_color = input("Enter hex color (e.g., #ff5733 or ff5733): ").strip()
+        if self.color_pair-1>1: # don't overwrite the default (black and white)
+            curses.endwin()  # End curses mode to allow normal input
+            hex_color = input("Enter hex color (e.g., #ff5733 or ff5733): ").strip()
 
-        # Remove the '#' if it's present
-        if hex_color.startswith("#"):
-            hex_color = hex_color[1:]
+            # Remove the '#' if it's present
+            if hex_color.startswith("#"):
+                hex_color = hex_color[1:]
 
-        # Ensure the input is exactly 6 characters long
-        if len(hex_color) != 6:
-            raise ValueError("Invalid hex color. Please provide a 6-character hex value.")
+            # Ensure the input is exactly 6 characters long
+            if len(hex_color) != 6:
+                raise ValueError("Invalid hex color. Please provide a 6-character hex value.")
 
-        # Convert hex to RGB
-        r = int(hex_color[0:2], 16)
-        g = int(hex_color[2:4], 16)
-        b = int(hex_color[4:6], 16)
+            # Convert hex to RGB
+            r = int(hex_color[0:2], 16)
+            g = int(hex_color[2:4], 16)
+            b = int(hex_color[4:6], 16)
 
-        self.color = (r, g, b)
-        color_id = self.get_closest_color_id(r, g, b)
-        if (color_id>1):
-            color_id-=1
-        self.color_pair = self.color_pairs[int(color_id)]
+            # set the color
+            self.color = (r, g, b)
+            self.colors[self.color_pair-1]=self.color
 
-        curses.setupterm()
+            # update the color palette
+            self.initialize_colors()
+
+            curses.setupterm()
         
 
     # use the color wheel from the color picker class
@@ -592,10 +552,16 @@ def handle_input(key, drawing):
     elif key == curses.KEY_RIGHT or key == ord('d'):
         drawing.move_cursor('RIGHT')
     if key == ord(' '):
-        drawing.pen_down = not drawing.pen_down
-        if drawing.pen_down:
+        # Regular pen
+        if not drawing.pen_down:
             drawing.save_image('pix.save.0.png', confirm="y")
             drawing.take_screenshot() # save current image to variable screenshot
+
+        if drawing.tool_id==0:
+            drawing.pen_down = not drawing.pen_down
+        elif drawing.tool_id==1:
+            drawing.draw_rect()            
+        
     if key == ord('\n'):
         drawing.pen_down = False
         drawing.save_image('pix.save.0.png', confirm="y")
@@ -603,9 +569,7 @@ def handle_input(key, drawing):
         drawing.draw_pixel()
     if key == ord('l'):
         drawing.pen_down = False
-        drawing.save_image('pix.save.0.png', confirm="y")
-        drawing.take_screenshot() # save current image to variable screenshot
-        drawing.draw_rect()            
+        drawing.tool_id=1
     elif key == ord('b'):  # Bucket fill
         drawing.take_screenshot() # save current image to variable screenshot
         drawing.save_image('pix.save.0.png', confirm="y")
@@ -626,7 +590,7 @@ def handle_input(key, drawing):
         drawing.decrease_color()
         
     # Drawing logic if pen is down
-    if drawing.pen_down:
+    if drawing.pen_down and drawing.tool_id==0:
         drawing.draw_pixel()
 
     drawing.update_cursor()
