@@ -1,5 +1,4 @@
 # Pixel-art Independent of X11 or P.I.X for short
-
 import signal
 import argparse
 import curses
@@ -15,6 +14,7 @@ class Drawing:
         # for line pen:
         self.rect_pen=False
         self.tool_id=0
+        self.tool_count=3
         # for x2 and y2 you could use cursor_x and cursor_y I think.
         self.x1=self.x2=self.y1=self.y2=-1     
         self.background_color=background
@@ -34,6 +34,8 @@ class Drawing:
         self.screenshots = []  # Change to a list to store multiple screenshots
         self.current_state = self.take_screenshot()
 
+        self.tools = ["Pen","Pixel","Rect","Pick"]
+        
         self.colors = [
             (0, 0, 0),       # Black
             (255, 255, 255), # White
@@ -155,6 +157,18 @@ class Drawing:
         if self.mirror_h and self.mirror_v:
             self.image.putpixel((self.width - 1 - x, self.height - 1 - y), color)
 
+    def get_pixel(self,x,y):
+        r, g, b = self.image.getpixel((x, y))
+        color=(r,g,b)
+        return color
+
+    def pick_pixel(self):
+        r, g, b = self.image.getpixel((self.cursor_x, self.cursor_y))
+        color_key=self.get_closest_color_id(r,g,b)        
+        color=(r,g,b)
+        self.color = color
+        self.color_pair = self.color_pairs[int(color_key-2)]
+
     def draw_rect(self):
         if self.pen_down:
             self.x2, self.y2 = self.cursor_x, self.cursor_y
@@ -207,19 +221,28 @@ class Drawing:
         if (self.pen_down):
             char='◘'
         else:
-            char='•'
+#            if self.tool_id == 0: # Line tool
+#                char='•'
+#            elif self.tool_id == 1: # Rect tool
+#                char="🖍"
+#            elif self.tool_id == 2: # Picker tool
+#                char="🖋"
+#            elif self.tool_id == 3: # Pixel tool
+#                char="🖌"             
+#            else:
+            char=str(self.tool_id)
 
         if self.color_pair != 1: # if black turn to white (cause black on black ain't visible)
             color = curses.color_pair(self.color_pair) # set to active color
         else:
-            color = curses.color_pair(2) # set to white
-            if (self.pen_down):
-                char='X'
-            else:
-                char='x'
+            color = curses.color_pair(2) | curses.A_REVERSE # set to white
+#            if (self.pen_down):
+#                char='X'
+#            else:
+#                char='x'
 
 
-        self.stdscr.addch(self.view_size // 2, self.view_size // 2, char, color | curses.A_BLINK)
+        self.stdscr.addch(self.view_size // 2, self.view_size // 2, char, color)
         self.stdscr.move(self.view_size // 2, self.view_size // 2)
 
     # Get the closest even if not exact match
@@ -325,7 +348,7 @@ class Drawing:
                         char = '█'
                         color_id = closest
                         # rect pen selection
-                        if self.tool_id==1 and self.pen_down: 
+                        if self.tool_id==2 and self.pen_down: 
                             if img_x >= self.x1 and img_y >= self.y1 and img_x <= self.cursor_x and img_y <= self.cursor_y or img_x <= self.x1 and img_y <= self.y1 and img_x >= self.cursor_x and img_y >= self.cursor_y or img_x >= self.x1 and img_y <= self.y1 and img_x <= self.cursor_x and img_y >= self.cursor_y or img_x <= self.x1 and img_y >= self.y1 and img_x >= self.cursor_x and img_y <= self.cursor_y:
                                 char = 'x'
                                 color_id=self.color_pair+1
@@ -377,8 +400,8 @@ class Drawing:
                     pass
 
                 # pbar Draw pallet bar
-                offset_y=1
-                offset_x=3
+                offset_y=2
+                offset_x=2
                 for i in range(1,11):
                     index=i
                     if self.color_pair==index:
@@ -402,6 +425,7 @@ class Drawing:
                 #self.stdscr.addch(13, 5, char, curses.color_pair(1))
                 # Use addstr to add a string at position (5, 5)
                 # Debugs:
+                self.stdscr.addstr(1, 1, str(self.tools[self.tool_id]), curses.color_pair(2))
 #                self.stdscr.addstr(20, 7, "Color: "+str(self.color), curses.color_pair(0))
 #                self.stdscr.addstr(22, 7, "Index: "+str(self.color_pair), curses.color_pair(0))
 #                self.stdscr.addstr(24, 7, "pos: "+str(self.cursor_x)+", "+str(self.cursor_y), curses.color_pair(0))
@@ -551,25 +575,29 @@ def handle_input(key, drawing):
         drawing.move_cursor('LEFT')
     elif key == curses.KEY_RIGHT or key == ord('d'):
         drawing.move_cursor('RIGHT')
-    if key == ord(' '):
-        # Regular pen
+    if key == ord(' ') or key == ord('\n'):
         if not drawing.pen_down:
             drawing.save_image('pix.save.0.png', confirm="y")
             drawing.take_screenshot() # save current image to variable screenshot
-
+        # Tools actions
         if drawing.tool_id==0:
             drawing.pen_down = not drawing.pen_down
         elif drawing.tool_id==1:
+            drawing.pen_down = False
+            drawing.draw_pixel()                        
+        elif drawing.tool_id==2:
             drawing.draw_rect()            
-        
-    if key == ord('\n'):
+        elif drawing.tool_id==3:
+            drawing.pick_pixel()    
+            drawing.tool_id=0
+            drawing.pen_down = False
+
+    if key == ord('t'):
         drawing.pen_down = False
-        drawing.save_image('pix.save.0.png', confirm="y")
-        drawing.take_screenshot() # save current image to variable screenshot
-        drawing.draw_pixel()
-    if key == ord('l'):
-        drawing.pen_down = False
-        drawing.tool_id=1
+        if drawing.tool_id<drawing.tool_count:
+            drawing.tool_id+=1
+        else:
+            drawing.tool_id=0
     elif key == ord('b'):  # Bucket fill
         drawing.take_screenshot() # save current image to variable screenshot
         drawing.save_image('pix.save.0.png', confirm="y")
