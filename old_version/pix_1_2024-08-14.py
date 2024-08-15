@@ -1,5 +1,30 @@
 # Pixel-art Independent of X11 or P.I.X for short
 
+# The - and = key allow to move up and down the palette the palette as a default hard coded, 0 to 9 to select specefic color index from the palet, you could have a color selection screen for the palet, the palet can be altered using shift + palette index as number key to add the current color to that index, palet can be saved, pallet can be loaded
+
+#########################################
+# TODO:                                 #
+#########################################
+#                                       #
+#  - Optimise the shit out of it        #
+# - Option to enter hex as color        #
+# - Full 256 color preview in cli       #
+# - Grid colorwheel color picker        #
+# - Save as ascii                       #
+# - Save as colored ascii-escape code   #
+# - Line Pen                            #
+# - Select copy and paste               #
+# - Accurate warp boundary colors arrow #
+# - Image filter                        #
+# - Animation frame                     #
+# - Layer guides and decals             #
+#                                       #
+#########################################
+
+# Done
+# x added hex value input
+# x added more color support
+
 import signal
 import argparse
 import curses
@@ -7,7 +32,6 @@ import os
 from PIL import Image
 from random import randint
 import math
-from collections import Counter
 
 class ColorPicker:
     def __init__(self):
@@ -99,21 +123,20 @@ class Drawing:
             (255, 192, 203)  # Pink
         ]
 
-        #NOTE: too slow to run
         # Add random unique colors until we reach 254 total colors
 #        while len(self.colors) < 254:
 #            random_color = (randint(0, 255), randint(0, 255), randint(0, 255))
 #            if random_color not in self.colors:
 #                self.colors.append(random_color)
 
-        # NOTE: Add some random colors to the default pallet
-        suported_colors=24
+        suported_colors=64
         while len(self.colors) < suported_colors:
             random_color = (randint(0, 255), randint(0, 255), randint(0, 255))
             if random_color not in self.colors:
                 self.colors.append(random_color)
  
-        self.load_rgb_from_file("pix.hex")
+        #self.load_rgb_from_file("pix.hex")
+
         self.color_pairs = {}
         self.initialize_colors()
         self.pen_down = False  # Initialize pen state
@@ -378,33 +401,27 @@ class Drawing:
                                 char = 'x'
                                 color_id=self.color_pair
                 elif img_x > 0 and img_x < self.width:
-                        if len(self.colors) < 64:
-                            color_id=3
-                            char = ' '
-                            if (img_y == -1):
-                                r, g, b = self.image.getpixel((img_x, self.height-1))
-                                closest = self.get_closest_color_id(r,g,b)
-                                color_id = closest
-                                char = '▲'
-                            if (img_y == self.height):
-                                r, g, b = self.image.getpixel((img_x, 0))
-                                closest = self.get_closest_color_id(r,g,b)
-                                color_id = closest
-                                char = '▼'
+                        color_id=3
+                        char = ' '
+                        if (img_y == -1):
+                            r, g, b = self.image.getpixel((img_x, self.height-1))
+                            color_id = closest
+                            char = '▲'
+                        if (img_y == self.height):
+                            r, g, b = self.image.getpixel((img_x, 0))
+                            color_id = closest
+                            char = '▼'
                 elif img_y > 0 and img_y < self.height:
-                        if len(self.colors) < 64:
-                            color_id=3
-                            char = ' '
-                            if (img_x == -1):
-                                r, g, b = self.image.getpixel((self.width-1, img_y))
-                                closest = self.get_closest_color_id(r,g,b)
-                                color_id = closest
-                                char = '◀'
-                            if (img_x == self.width):
-                                r, g, b = self.image.getpixel((0, img_y))
-                                closest = self.get_closest_color_id(r,g,b)
-                                color_id = closest
-                                char = '▶'
+                        color_id=3
+                        char = ' '
+                        if (img_x == -1):
+                            r, g, b = self.image.getpixel((self.width-1, img_y))
+                            color_id = closest
+                            char = '◀'
+                        if (img_x == self.width):
+                            r, g, b = self.image.getpixel((0, img_y))
+                            color_id = closest
+                            char = '▶'
                 else:
                     char = ' '
                     color_id = 3
@@ -448,26 +465,17 @@ class Drawing:
 #                self.stdscr.addstr(22, 7, "Index: "+str(self.color_pair), curses.color_pair(0))
 #                self.stdscr.addstr(24, 7, "pos: "+str(self.cursor_x)+", "+str(self.cursor_y), curses.color_pair(0))
                 
-    def load_image(self, filename, resolution=96):
+
+
+
+
+    def load_image(self, filename):
         with Image.open(filename) as img:
-            img = img.quantize(colors=resolution).convert('RGB')
-            self.image = img
+            self.image = img.convert('RGB')
             self.width, self.height = self.image.size
             self.cursor_x = self.width // 2
             self.cursor_y = self.height // 2
 
-            # Extract colors and count them
-            pixels = list(self.image.getdata())
-            color_count = Counter(pixels)
-            most_common_colors = color_count.most_common(resolution)
-
-            # Append unique colors to palette
-            for color, _ in most_common_colors:
-                if color not in self.colors:
-                    self.colors.append(color)
-
-                    
-        self.initialize_colors()
 
     def rgb_prompt(self):
         curses.endwin()  # End curses mode to allow normal input
