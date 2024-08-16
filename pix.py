@@ -15,7 +15,7 @@ class Drawing:
         self.info_bar=True
         self.rect_pen=False
         self.tool_id=0
-        self.tool_count=3
+        self.tool_count=6
         # for x2 and y2 you could use cursor_x and cursor_y I think.
         self.x1=self.x2=self.y1=self.y2=-1     
         self.background_color=background
@@ -35,7 +35,7 @@ class Drawing:
         self.screenshots = []  # Change to a list to store multiple screenshots
         self.current_state = self.take_screenshot()
 
-        self.tools = ["Pen","Pixel","Rect","Pick"]
+        self.tools = ["Pen","Dot","Rect","Copy","Bucket","Line","Ellipse"]
         
         self.colors = [
             (0, 0, 0),       # Black
@@ -183,9 +183,88 @@ class Drawing:
             self.x1, self.y1 = self.cursor_x, self.cursor_y
             self.pen_down = True
 
+
+    def draw_ellipse(self, filled=False):
+        if self.pen_down:
+            # Swap coordinates if needed
+            if self.x1 > self.cursor_x:
+                x1, x2 = self.cursor_x, self.x1
+            else:
+                x1, x2 = self.x1, self.cursor_x
+
+            if self.y1 > self.cursor_y:
+                y1, y2 = self.cursor_y, self.y1
+            else:
+                y1, y2 = self.y1, self.cursor_y
+
+            # If any of the values are <= 2, draw a rectangle instead
+            if (x2 - x1) <= 2 or (y2 - y1) <= 2:
+                self.draw_rect()
+                return
+
+            # Midpoints
+            center_x = (x1 + x2) / 2
+            center_y = (y1 + y2) / 2
+            radius_x = (x2 - x1) / 2
+            radius_y = (y2 - y1) / 2
+
+            for x in range(x1, x2 + 1):
+                for y in range(y1, y2 + 1):
+                    # Skip the corners for larger shapes
+                    if (x == x1 or x == x2) and (y == y1 or y == y2):
+                        continue
+
+                    # Ellipse equation
+                    inside_ellipse = ((x - center_x) ** 2) / (radius_x ** 2) + ((y - center_y) ** 2) / (radius_y ** 2) <= 1
+
+                    if filled:
+                        if inside_ellipse:
+                            self.set_pixel(x, y)
+                    else:
+                        # Draw outline: check if the point is close to the ellipse boundary
+                        if radius_x > 0 and radius_y > 0:
+                            border_thickness = 1  # Adjust this if needed
+                            if abs(((x - center_x) ** 2) / (radius_x ** 2) + ((y - center_y) ** 2) / (radius_y ** 2) - 1) <= border_thickness / max(radius_x, radius_y):
+                                self.set_pixel(x, y)
+
+            self.reset_rect()
+        else:
+            self.x1, self.y1 = self.cursor_x, self.cursor_y
+            self.pen_down = True
+        
+        
+    def draw_line(self):
+        if self.pen_down:
+            x1, y1 = self.x1, self.y1
+            x2, y2 = self.cursor_x, self.cursor_y
+
+            dx = abs(x2 - x1)
+            dy = abs(y2 - y1)
+            sx = 1 if x1 < x2 else -1
+            sy = 1 if y1 < y2 else -1
+            err = dx - dy
+
+            while True:
+                self.set_pixel(x1, y1)
+                if x1 == x2 and y1 == y2:
+                    break
+                e2 = err * 2
+                if e2 > -dy:
+                    err -= dy
+                    x1 += sx
+                if e2 < dx:
+                    err += dx
+                    y1 += sy
+
+            self.reset_rect()
+        else:
+            self.x1, self.y1 = self.cursor_x, self.cursor_y
+            self.pen_down = True
+
     def reset_rect(self):
         self.pen_down = False
         self.x1 = self.x2 = self.y1 = self.y2 = 0
+
 
     def bucket_fill(self, x, y, new_color):
         if not (0 <= x < self.width and 0 <= y < self.height):
@@ -347,10 +426,12 @@ class Drawing:
                         else:
                             color_id = closest
                     else:
+                        # PREVIEW TOOL
+
                         char = '█'
                         color_id = closest
-                        # rect pen selection
-                        if self.tool_id==2 and self.pen_down: 
+                        # Rect pen selection
+                        if ( self.tool_id==6 or self.tool_id==2 ) and self.pen_down: 
                             if img_x >= self.x1 and img_y >= self.y1 and img_x <= self.cursor_x and img_y <= self.cursor_y or img_x <= self.x1 and img_y <= self.y1 and img_x >= self.cursor_x and img_y >= self.cursor_y or img_x >= self.x1 and img_y <= self.y1 and img_x <= self.cursor_x and img_y >= self.cursor_y or img_x <= self.x1 and img_y >= self.y1 and img_x >= self.cursor_x and img_y <= self.cursor_y:
                                 char = 'x'
                                 color_id=self.color_pair+1
@@ -358,6 +439,41 @@ class Drawing:
                                 # make black visible as white
                                 if color_id==2:
                                     color_id=3
+                                    
+                        # Line tool preview
+                        if self.tool_id == 5 and self.pen_down:
+                            # Bresenham's line algorithm to determine line pixels
+                            x1, y1 = self.x1, self.y1
+                            x2, y2 = self.cursor_x, self.cursor_y
+
+                            dx = abs(x2 - x1)
+                            dy = abs(y2 - y1)
+                            sx = 1 if x1 < x2 else -1
+                            sy = 1 if y1 < y2 else -1
+                            err = dx - dy
+
+                            while True:
+                                if img_x == x1 and img_y == y1:
+                                    char = 'x'
+                                    color_id = self.color_pair + 1
+
+                                    # Make black visible as white
+                                    if color_id == 2:
+                                        color_id = 3
+
+                                if x1 == x2 and y1 == y2:
+                                    break
+
+                                e2 = err * 2
+                                if e2 > -dy:
+                                    err -= dy
+                                    x1 += sx
+                                if e2 < dx:
+                                    err += dx
+                                    y1 += sy                         
+
+
+
                 elif img_x > 0 and img_x < self.width:
                         if len(self.colors) < 64:
                             color_id=3
@@ -437,6 +553,8 @@ class Drawing:
 #                self.stdscr.addstr(22, 7, "Index: "+str(self.color_pair), curses.color_pair(0))
 #                self.stdscr.addstr(24, 7, "pos: "+str(self.cursor_x)+", "+str(self.cursor_y), curses.color_pair(0))
                 
+    # Could get less compression with higher resolution but that's good enaugh for pixel art, it's some between 128 and 64
+    # If I implement a config file system that's the kind of stuff you could tweek in the pixrc file
     def load_image(self, filename, resolution=96):
         with Image.open(filename) as img:
             img = img.quantize(colors=resolution).convert('RGB')
@@ -517,8 +635,9 @@ class Drawing:
 
         if str(confirm.lower()) == "n":
             curses.endwin()  # End curses mode to allow normal input
+            filename = input("Enter filename (default '"+str(filename)+"'): ").strip()
             confirm = input("Save changes to "+str(filename)+"? (y/N): ").strip()            
-
+            
         if str(confirm.lower()) == "y":
             self.image.save(filename)
 
@@ -533,7 +652,6 @@ class Drawing:
             self.cursor_y = self.height // 2
         curses.initscr()  # Restart curses mode
 
-        
     def toggle_horizontal_mirroring(self):
         self.mirror_h = not self.mirror_h
 
@@ -600,14 +718,15 @@ def handle_input(key, drawing):
             drawing.pick_pixel()    
             drawing.tool_id=0
             drawing.pen_down = False
+        elif drawing.tool_id==4:
+            drawing.bucket_fill(drawing.cursor_x, drawing.cursor_y, drawing.color)
+        elif drawing.tool_id==5:
+            drawing.draw_line()            
+        elif drawing.tool_id==6:
+            drawing.draw_ellipse()            
 
-    if key == ord('t'):
-        drawing.pen_down = False
-        if drawing.tool_id<drawing.tool_count:
-            drawing.tool_id+=1
-        else:
-            drawing.tool_id=0
     elif key == ord('b'):  # Bucket fill
+        drawing.tool_id=4
         drawing.take_screenshot() # save current image to variable screenshot
         drawing.save_image('pix.save.0.png', confirm="y")
         drawing.bucket_fill(drawing.cursor_x, drawing.cursor_y, drawing.color)
@@ -627,6 +746,12 @@ def handle_input(key, drawing):
         drawing.decrease_color()
 
     # Tools:
+    if key == ord('t'):
+        drawing.pen_down = False
+        if drawing.tool_id<drawing.tool_count:
+            drawing.tool_id+=1
+        else:
+            drawing.tool_id=0    
     if key == ord('!'):
         drawing.tool_id=0
     elif key == ord('@'):
@@ -635,6 +760,12 @@ def handle_input(key, drawing):
         drawing.tool_id=2
     elif key == ord('$'):
         drawing.tool_id=3
+    elif key == ord('%'):
+        drawing.tool_id=4
+    elif key == ord('^'):
+        drawing.tool_id=5
+    elif key == ord('&'):
+        drawing.tool_id=6
 
         
     # Drawing logic if pen is down
