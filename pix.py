@@ -12,6 +12,7 @@ class Drawing:
     def __init__(self, stdscr, width=64, height=64, view_size=64, filename=None, background=0):
         self.stdscr = stdscr
         # for line pen:
+        self.info_bar=True
         self.rect_pen=False
         self.tool_id=0
         self.tool_count=3
@@ -56,7 +57,7 @@ class Drawing:
 #            if random_color not in self.colors:
 #                self.colors.append(random_color)
 
-        # NOTE: Add some random colors to the default pallet
+        # NOTE: Add some random colors to the default pallet to expend it a little
         suported_colors=24
         while len(self.colors) < suported_colors:
             random_color = (randint(0, 255), randint(0, 255), randint(0, 255))
@@ -171,9 +172,9 @@ class Drawing:
 
     def draw_rect(self):
         if self.pen_down:
-            self.x2, self.y2 = self.cursor_x, self.cursor_y
-            x1, x2 = sorted([self.x1, self.x2])
-            y1, y2 = sorted([self.y1, self.y2])
+            #self.x2, self.y2 = self.cursor_x, self.cursor_y
+            x1, x2 = sorted([self.x1, self.cursor_x])
+            y1, y2 = sorted([self.y1, self.cursor_y])
             for x in range(x1, x2 + 1):
                 for y in range(y1, y2 + 1):
                     self.set_pixel(x, y)
@@ -230,7 +231,8 @@ class Drawing:
 #            elif self.tool_id == 3: # Pixel tool
 #                char="🖌"             
 #            else:
-            char=str(self.tool_id)
+            #char=str(self.tool_id)
+            char="•"
 
         if self.color_pair != 1: # if black turn to white (cause black on black ain't visible)
             color = curses.color_pair(self.color_pair) # set to active color
@@ -352,6 +354,10 @@ class Drawing:
                             if img_x >= self.x1 and img_y >= self.y1 and img_x <= self.cursor_x and img_y <= self.cursor_y or img_x <= self.x1 and img_y <= self.y1 and img_x >= self.cursor_x and img_y >= self.cursor_y or img_x >= self.x1 and img_y <= self.y1 and img_x <= self.cursor_x and img_y >= self.cursor_y or img_x <= self.x1 and img_y >= self.y1 and img_x >= self.cursor_x and img_y <= self.cursor_y:
                                 char = 'x'
                                 color_id=self.color_pair+1
+
+                                # make black visible as white
+                                if color_id==2:
+                                    color_id=3
                 elif img_x > 0 and img_x < self.width:
                         if len(self.colors) < 64:
                             color_id=3
@@ -399,25 +405,27 @@ class Drawing:
                 except curses.error:
                     pass
 
-                # pbar Draw pallet bar
-                offset_y=2
-                offset_x=2
-                for i in range(1,11):
-                    index=i
-                    if self.color_pair==index:
-                        # active color
-                        # chars: •█
-                        char="•"
-                        #self.stdscr.addstr(5+i, 7, str(self.colors[index-1])+", "+str(i-1), curses.color_pair(0))
-                    else:
-                        char=str(i-1)
-                        #self.stdscr.addstr(5+i, 7, str(self.colors[index-1])+", "+str(index)+", "+str(i-1), curses.color_pair(0))
+                # TOP GUI INFO
+                if self.info_bar==True:
+                    offset_y=2
+                    offset_x=2
+                    for i in range(1,11):
+                        index=i
+                        if self.color_pair==index:
+                            # active color
+                            # chars: •█
+                            char="•"
+                            #self.stdscr.addstr(5+i, 7, str(self.colors[index-1])+", "+str(i-1), curses.color_pair(0))
+                        else:
+                            char=str(i-1)
+                            #self.stdscr.addstr(5+i, 7, str(self.colors[index-1])+", "+str(index)+", "+str(i-1), curses.color_pair(0))
 
-                    # make black visible
-                    if index > 1:
-                        self.stdscr.addch(offset_y+i, offset_x, char, curses.color_pair(index) | curses.A_REVERSE)
-                    else:
-                        self.stdscr.addch(offset_y+i, offset_x, char, curses.color_pair(2))
+                        # make black visible
+                        if index > 1:
+                            self.stdscr.addch(offset_y+i, offset_x, char, curses.color_pair(index) | curses.A_REVERSE)
+                        else:
+                            self.stdscr.addch(offset_y+i, offset_x, char, curses.color_pair(2))
+                    self.stdscr.addstr(1, 1, str(self.tools[self.tool_id]), curses.color_pair(2))
                     
 
                 # default black and white
@@ -425,7 +433,6 @@ class Drawing:
                 #self.stdscr.addch(13, 5, char, curses.color_pair(1))
                 # Use addstr to add a string at position (5, 5)
                 # Debugs:
-                self.stdscr.addstr(1, 1, str(self.tools[self.tool_id]), curses.color_pair(2))
 #                self.stdscr.addstr(20, 7, "Color: "+str(self.color), curses.color_pair(0))
 #                self.stdscr.addstr(22, 7, "Index: "+str(self.color_pair), curses.color_pair(0))
 #                self.stdscr.addstr(24, 7, "pos: "+str(self.cursor_x)+", "+str(self.cursor_y), curses.color_pair(0))
@@ -575,6 +582,8 @@ def handle_input(key, drawing):
         drawing.move_cursor('LEFT')
     elif key == curses.KEY_RIGHT or key == ord('d'):
         drawing.move_cursor('RIGHT')
+    elif key == ord('g'):
+        drawing.info_bar = not drawing.info_bar
     if key == ord(' ') or key == ord('\n'):
         if not drawing.pen_down:
             drawing.save_image('pix.save.0.png', confirm="y")
@@ -616,6 +625,17 @@ def handle_input(key, drawing):
         drawing.increase_color()
     if key == ord('-'):
         drawing.decrease_color()
+
+    # Tools:
+    if key == ord('!'):
+        drawing.tool_id=0
+    elif key == ord('@'):
+        drawing.tool_id=1
+    elif key == ord('#'):
+        drawing.tool_id=2
+    elif key == ord('$'):
+        drawing.tool_id=3
+
         
     # Drawing logic if pen is down
     if drawing.pen_down and drawing.tool_id==0:
