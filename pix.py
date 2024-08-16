@@ -198,7 +198,7 @@ class Drawing:
                 y1, y2 = self.y1, self.cursor_y
 
             # If any of the values are <= 2, draw a rectangle instead
-            if (x2 - x1) <= 2 or (y2 - y1) <= 2:
+            if (x2 - x1) < 2 or (y2 - y1) < 2:
                 self.draw_rect()
                 return
 
@@ -211,8 +211,8 @@ class Drawing:
             for x in range(x1, x2 + 1):
                 for y in range(y1, y2 + 1):
                     # Skip the corners for larger shapes
-                    if (x == x1 or x == x2) and (y == y1 or y == y2):
-                        continue
+#                    if (x == x1 or x == x2) and (y == y1 or y == y2):
+#                        continue
 
                     # Ellipse equation
                     inside_ellipse = ((x - center_x) ** 2) / (radius_x ** 2) + ((y - center_y) ** 2) / (radius_y ** 2) <= 1
@@ -635,7 +635,9 @@ class Drawing:
 
         if str(confirm.lower()) == "n":
             curses.endwin()  # End curses mode to allow normal input
-            filename = input("Enter filename (default '"+str(filename)+"'): ").strip()
+            new_filename = input("Enter filename (default '"+str(filename)+"'): ").strip()
+            if new_filename != "":
+                filename=new_filename
             confirm = input("Save changes to "+str(filename)+"? (y/N): ").strip()            
             
         if str(confirm.lower()) == "y":
