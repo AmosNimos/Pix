@@ -3,7 +3,6 @@ import signal
 import argparse
 import curses
 import os
-import sys
 from PIL import Image
 from random import randint
 import math
@@ -185,7 +184,7 @@ class Drawing:
             self.pen_down = True
 
 
-    def draw_ellipse(self, filled=True):
+    def draw_ellipse(self, filled=False):
         if self.pen_down:
             # Swap coordinates if needed
             if self.x1 > self.cursor_x:
@@ -213,9 +212,10 @@ class Drawing:
                         # Skip the corners
                         if (x == x1 or x == x2) and (y == y1 or y == y2):
                             continue
+
                         # Set the pixel if it's not the middle or a corner
                         self.set_pixel(x, y)
-            
+
             else:            
                 # Midpoints
                 center_x = (x1 + x2) / 2
@@ -225,34 +225,28 @@ class Drawing:
 
                 for x in range(x1, x2 + 1):
                     for y in range(y1, y2 + 1):
+                        # Skip the corners for larger shapes
+    #                    if (x == x1 or x == x2) and (y == y1 or y == y2):
+    #                        continue
+
                         # Ellipse equation
                         inside_ellipse = ((x - center_x) ** 2) / (radius_x ** 2) + ((y - center_y) ** 2) / (radius_y ** 2) <= 1
 
                         if filled:
                             if inside_ellipse:
                                 self.set_pixel(x, y)
-                        
-                        # Outline with 1 pixel thickness
-                        if radius_x > 0 and radius_y > 0:
-                            distance = abs(((x - center_x) ** 2) / (radius_x ** 2) +
-                                           ((y - center_y) ** 2) / (radius_y ** 2) - 1)
-                            if distance <= 0.5:  # 0.5 margin ensures a 1-pixel thick line
-                                self.set_pixel(x, y)
+                        else:
+                            # Draw outline: check if the point is close to the ellipse boundary
+                            if radius_x > 0 and radius_y > 0:
+                                border_thickness = 1  # Adjust this if needed
+                                if abs(((x - center_x) ** 2) / (radius_x ** 2) + ((y - center_y) ** 2) / (radius_y ** 2) - 1) <= border_thickness / max(radius_x, radius_y):
+                                    self.set_pixel(x, y)
 
             self.reset_rect()
         else:
             self.x1, self.y1 = self.cursor_x, self.cursor_y
             self.pen_down = True
-
-    # Ensures no gaps in the ellipse outline
-    def fill_gaps(self, x1, x2, y1, y2):
-        for x in range(x1, x2 + 1):
-            for y in range(y1, y2 + 1):
-                if not self.get_pixel(x, y):
-                    # Check neighboring pixels
-                    if (self.get_pixel(x - 1, y) or self.get_pixel(x + 1, y) or
-                        self.get_pixel(x, y - 1) or self.get_pixel(x, y + 1)):
-                        self.set_pixel(x, y)
+        
         
     def draw_line(self):
         if self.pen_down:
@@ -809,34 +803,11 @@ def parse_arguments():
     args = parser.parse_args()
     return args
     
-
-def single_argument(arg):
-    filename = None
-    
-    for arg in args:
-        # Check if the argument is a string, ends with .hex, and is a valid file
-        if isinstance(arg, str) and arg.endswith('.hex'):
-            if os.path.isfile(arg) and os.access(arg, os.R_OK):
-                # Attempt to read the first few bytes to confirm it's a text file
-                with open(arg, 'rb') as file:
-                    first_bytes = file.read(512)  # Read first 512 bytes for checking
-                    try:
-                        first_bytes.decode('utf-8')  # Try to decode to UTF-8
-                        filename = arg  # It's a valid text file, set filename
-                        break  # Stop once a valid filename is found
-                    except UnicodeDecodeError:
-                        print(f"Warning: {arg} is not a text file.")
-            else:
-                print(f"Warning: {arg} is not a valid file or cannot be read.")
-    
-    return filename
         
 def main(stdscr):
     #args = parse_arguments()
-    args = sys.argv[1:]
-    filename = single_argument(args)
-    if filename == None:
-        filename = args.file if args.file else None
+    
+    filename = args.file if args.file else None
 
     #curses.curs_set(1)  # Make cursor visible
 
@@ -874,8 +845,8 @@ parser = argparse.ArgumentParser(description='CLI drawing program.')
 parser = argparse.ArgumentParser(usage='(w,a,s,d) keys to move the cursor, (e) to export, (0 - 9) change the color, (b) bucket fill, (h,v) mirror pen, (r) reset canvas, (l) color wheel, (space) toggle pen, (enter) place single pixel, (U,F) Undo & Redo')
 parser.add_argument('-W','--width', type=int, default=64, help='Width of the image.')
 parser.add_argument('-H','--height', type=int, default=64, help='Height of the image.')
-parser.add_argument('-f','--file', type=str, help='File to load.')
-parser.add_argument('-b','--background', type=int, default=-1, help="Canvas background color")
+parser.add_argument('-F','--file', type=str, help='File to load.')
+parser.add_argument('-B','--background', type=int, default=-1, help="Canvas background color")
 args = parser.parse_args()
 
 
