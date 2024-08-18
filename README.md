@@ -1,6 +1,4 @@
-# PIX
-
-<img src="./pix.png">
+<img src="./pix.png" alt="./PIX">
 
 Welcome to **Pix**, arguably the pinnacle of CLI pixel art tools!
 
@@ -10,6 +8,7 @@ Pix is a minimalist image editor meticulously designed for pixel art and 2D anim
 <img src="./example_002.png"><p>Made in pix</p>
 <img src="./example_003.png"><p>Made in pix</p>
 <img src="./example_004.png"><p>Made in pix</p>
+<img src="./example_005.png"><p>Made in pix</p>
 
 
 ## Mindset
