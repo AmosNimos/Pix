@@ -185,7 +185,7 @@ class Drawing:
             self.pen_down = True
 
 
-    def draw_ellipse(self, filled=True):
+    def draw_ellipse(self, filled=False):
         if self.pen_down:
             # Swap coordinates if needed
             if self.x1 > self.cursor_x:
@@ -203,56 +203,53 @@ class Drawing:
                 self.draw_rect()
                 return
 
-            # Check if it's a 3x3 grid
-            if (x2 - x1) == 2 and (y2 - y1) == 2:  # Adjusted to consider inclusive range
-                for x in range(x1, x2 + 1):
-                    for y in range(y1, y2 + 1):
-                        # Skip the middle pixel
-                        if x == (x1 + x2) // 2 and y == (y1 + y2) // 2:
-                            continue
-                        # Skip the corners
-                        if (x == x1 or x == x2) and (y == y1 or y == y2):
-                            continue
-                        # Set the pixel if it's not the middle or a corner
-                        self.set_pixel(x, y)
-            
-            else:            
-                # Midpoints
-                center_x = (x1 + x2) / 2
-                center_y = (y1 + y2) / 2
-                radius_x = (x2 - x1) / 2
-                radius_y = (y2 - y1) / 2
+            # Ellipse drawing using Bresenham's algorithm
+            center_x = (x1 + x2) // 2
+            center_y = (y1 + y2) // 2
+            radius_x = (x2 - x1) // 2
+            radius_y = (y2 - y1) // 2
 
-                for x in range(x1, x2 + 1):
-                    for y in range(y1, y2 + 1):
-                        # Ellipse equation
-                        inside_ellipse = ((x - center_x) ** 2) / (radius_x ** 2) + ((y - center_y) ** 2) / (radius_y ** 2) <= 1
+            # Bresenham's ellipse algorithm variables
+            a2 = radius_x * radius_x
+            b2 = radius_y * radius_y
+            two_a2 = 2 * a2
+            two_b2 = 2 * b2
+            x = 0
+            y = radius_y
+            dx = two_b2 * x
+            dy = two_a2 * y
+            err = a2 * (1 - 2 * radius_y)
+            crit1 = -b2 * radius_x
+            crit2 = a2 * (1 - 2 * radius_x)
+            crit3 = crit1 - a2 * radius_y
 
-                        if filled:
-                            if inside_ellipse:
-                                self.set_pixel(x, y)
-                        
-                        # Outline with 1 pixel thickness
-                        if radius_x > 0 and radius_y > 0:
-                            distance = abs(((x - center_x) ** 2) / (radius_x ** 2) +
-                                           ((y - center_y) ** 2) / (radius_y ** 2) - 1)
-                            if distance <= 0.5:  # 0.5 margin ensures a 1-pixel thick line
-                                self.set_pixel(x, y)
+            while y >= 0 and x <= radius_x:
+                # Draw the ellipse in all four quadrants
+                if filled:
+                    for xi in range(center_x - x, center_x + x + 1):
+                        self.set_pixel(xi, center_y + y)
+                        self.set_pixel(xi, center_y - y)
+                else:
+                    # Outline with 1-pixel thickness
+                    self.set_pixel(center_x + x, center_y + y)
+                    self.set_pixel(center_x - x, center_y - y)
+                    self.set_pixel(center_x + x, center_y - y)
+                    self.set_pixel(center_x - x, center_y + y)
+
+                if err <= 0:
+                    x += 1
+                    dx += two_b2
+                    err += dx + b2
+                if err > 0:
+                    y -= 1
+                    dy -= two_a2
+                    err += a2 - dy
 
             self.reset_rect()
         else:
             self.x1, self.y1 = self.cursor_x, self.cursor_y
             self.pen_down = True
 
-    # Ensures no gaps in the ellipse outline
-    def fill_gaps(self, x1, x2, y1, y2):
-        for x in range(x1, x2 + 1):
-            for y in range(y1, y2 + 1):
-                if not self.get_pixel(x, y):
-                    # Check neighboring pixels
-                    if (self.get_pixel(x - 1, y) or self.get_pixel(x + 1, y) or
-                        self.get_pixel(x, y - 1) or self.get_pixel(x, y + 1)):
-                        self.set_pixel(x, y)
         
     def draw_line(self):
         if self.pen_down:
@@ -810,33 +807,31 @@ def parse_arguments():
     return args
     
 
-def single_argument(arg):
-    filename = None
-    
-    for arg in args:
-        # Check if the argument is a string, ends with .hex, and is a valid file
-        if isinstance(arg, str) and arg.endswith('.hex'):
-            if os.path.isfile(arg) and os.access(arg, os.R_OK):
-                # Attempt to read the first few bytes to confirm it's a text file
-                with open(arg, 'rb') as file:
-                    first_bytes = file.read(512)  # Read first 512 bytes for checking
-                    try:
-                        first_bytes.decode('utf-8')  # Try to decode to UTF-8
-                        filename = arg  # It's a valid text file, set filename
-                        break  # Stop once a valid filename is found
-                    except UnicodeDecodeError:
-                        print(f"Warning: {arg} is not a text file.")
-            else:
-                print(f"Warning: {arg} is not a valid file or cannot be read.")
-    
-    return filename
+#def single_argument(arg):
+#    filename = None
+#    
+#    # Check if the argument is a string, ends with .hex, and is a valid file
+#    if isinstance(arg, str) and arg.endswith('.hex'):
+#        if os.path.isfile(arg) and os.access(arg, os.R_OK):
+#            # Attempt to read the first few bytes to confirm it's a text file
+#            with open(arg, 'rb') as file:
+#                first_bytes = file.read(512)  # Read first 512 bytes for checking
+#                try:
+#                    first_bytes.decode('utf-8')  # Try to decode to UTF-8
+#                    filename = arg  # It's a valid text file, set filename
+#                    break  # Stop once a valid filename is found
+#                except UnicodeDecodeError:
+#                    print(f"Warning: {arg} is not a text file.")
+#        else:
+#            print(f"Warning: {arg} is not a valid file or cannot be read.")
+#    
+#    return filename
         
 def main(stdscr):
     #args = parse_arguments()
-    args = sys.argv[1:]
-    filename = single_argument(args)
-    if filename == None:
-        filename = args.file if args.file else None
+#    args = sys.argv[1:]
+#    filename = single_argument(args)
+    filename = args.file if args.file else None
 
     #curses.curs_set(1)  # Make cursor visible
 
