@@ -36,7 +36,7 @@ class Drawing:
         self.screenshots = []  # Change to a list to store multiple screenshots
         self.current_state = self.take_screenshot()
 
-        self.tools = ["Pen","Dot","Rect","Copy","Bucket","Line","Ellipse"]
+        self.tools = ["Dot","Pen","Bucket","Line","Rect","Ellipse","Copy"]
         
         self.colors = [
             (0, 0, 0),       # Black
@@ -449,7 +449,7 @@ class Drawing:
                         char = '█'
                         color_id = closest
                         # Rect pen selection
-                        if ( self.tool_id==6 or self.tool_id==2 ) and self.pen_down: 
+                        if ( self.tool_id==4 or self.tool_id==5 ) and self.pen_down: 
                             if img_x >= self.x1 and img_y >= self.y1 and img_x <= self.cursor_x and img_y <= self.cursor_y or img_x <= self.x1 and img_y <= self.y1 and img_x >= self.cursor_x and img_y >= self.cursor_y or img_x >= self.x1 and img_y <= self.y1 and img_x <= self.cursor_x and img_y >= self.cursor_y or img_x <= self.x1 and img_y >= self.y1 and img_x >= self.cursor_x and img_y <= self.cursor_y:
                                 char = 'x'
                                 color_id=self.color_pair+1
@@ -459,7 +459,7 @@ class Drawing:
                                     color_id=3
                                     
                         # Line tool preview
-                        if self.tool_id == 5 and self.pen_down:
+                        if self.tool_id == 3 and self.pen_down:
                             # Bresenham's line algorithm to determine line pixels
                             x1, y1 = self.x1, self.y1
                             x2, y2 = self.cursor_x, self.cursor_y
@@ -653,10 +653,13 @@ class Drawing:
 
         if str(confirm.lower()) == "n":
             curses.endwin()  # End curses mode to allow normal input
+            confirm = input("Save changes to "+str(filename)+"? (y/N): ").strip()
+            if str(confirm.lower()) != "y":
+                return 0            
             new_filename = input("Enter filename (default '"+str(filename)+"'): ").strip()
+            
             if new_filename != "":
                 filename=new_filename
-            confirm = input("Save changes to "+str(filename)+"? (y/N): ").strip()            
             
         if str(confirm.lower()) == "y":
             self.image.save(filename)
@@ -707,9 +710,8 @@ def handle_input(key, drawing):
     elif key == ord('e'):  # 'e' to save and quit
         drawing.save_image(filename=drawing.filename)  # Save with default or user-provided filename
         return False
-    elif key == ord('e'):  # 'e' to save and quit
+    elif key == ord('S'):  # 'S' to save image
         drawing.save_image(filename=drawing.filename)  # Save with default or user-provided filename
-        return False
     elif key == ord('u'):  # 'e' to save and quit
         drawing.load_screenshot() # load variable screenshot to current image
     elif key == curses.KEY_UP or key == ord('w'):
@@ -726,35 +728,35 @@ def handle_input(key, drawing):
         if not drawing.pen_down:
             drawing.save_image('pix.save.0.png', confirm="y")
             drawing.take_screenshot() # save current image to variable screenshot
+
         # Tools actions
+        # self.tools = ["Dot","Pen","Bucket","Line","Rect","Ellipse","Copy"]
         if drawing.tool_id==0:
-            drawing.pen_down = not drawing.pen_down
-        elif drawing.tool_id==1:
+            # dot
             drawing.pen_down = False
             drawing.draw_pixel()                        
+        elif drawing.tool_id==1:
+            # pen
+            drawing.pen_down = not drawing.pen_down
         elif drawing.tool_id==2:
-            drawing.draw_rect()            
+            # buket
+            drawing.bucket_fill(drawing.cursor_x, drawing.cursor_y, drawing.color)
         elif drawing.tool_id==3:
+            drawing.draw_line()            
+        elif drawing.tool_id==4:
+            drawing.draw_rect()            
+        elif drawing.tool_id==5:
+            drawing.draw_ellipse()            
+        elif drawing.tool_id==6:
             drawing.pick_pixel()    
             drawing.tool_id=0
             drawing.pen_down = False
-        elif drawing.tool_id==4:
-            drawing.bucket_fill(drawing.cursor_x, drawing.cursor_y, drawing.color)
-        elif drawing.tool_id==5:
-            drawing.draw_line()            
-        elif drawing.tool_id==6:
-            drawing.draw_ellipse()            
 
-    elif key == ord('b'):  # Bucket fill
-        drawing.tool_id=4
-        drawing.take_screenshot() # save current image to variable screenshot
-        drawing.save_image('pix.save.0.png', confirm="y")
-        drawing.bucket_fill(drawing.cursor_x, drawing.cursor_y, drawing.color)
     elif key == ord('h'):
         drawing.toggle_horizontal_mirroring()
     elif key == ord('v'):
         drawing.toggle_vertical_mirroring()
-    elif key == ord('c'):
+    elif key == ord('H'):
         # Right now this is for entering custom hex values
         drawing.hex_prompt()
     elif key == ord('n'):
@@ -766,12 +768,21 @@ def handle_input(key, drawing):
         drawing.decrease_color()
 
     # Tools:
-    if key == ord('t'):
+    if key == ord('+'):
         drawing.pen_down = False
         if drawing.tool_id<drawing.tool_count:
             drawing.tool_id+=1
         else:
             drawing.tool_id=0    
+
+    if key == ord('_'):
+        drawing.pen_down = False
+        if drawing.tool_id>0:
+            drawing.tool_id-=1
+        else:
+            drawing.tool_id=drawing.tool_count    
+
+    # NOTE: The tool_id is offset to the number key by one        
     if key == ord('!'):
         drawing.tool_id=0
     elif key == ord('@'):
@@ -787,50 +798,50 @@ def handle_input(key, drawing):
     elif key == ord('&'):
         drawing.tool_id=6
 
-        
+    # copy color
+    if key == ord('c'):
+        drawing.pick_pixel()
+        drawing.tool_id=0
+        drawing.pen_down = False
+    # pen
+    elif key == ord('D'):
+        drawing.draw_pixel()            
+    elif key == ord('p'):
+        drawing.tool_id=1
+        drawing.pen_down = not drawing.pen_down
+    elif key == ord('b'):  # Bucket fill
+        #drawing.tool_id=2
+        drawing.take_screenshot() # save current image to variable screenshot
+        drawing.save_image('pix.save.0.png', confirm="y")
+        drawing.bucket_fill(drawing.cursor_x, drawing.cursor_y, drawing.color)
+                    
     # Drawing logic if pen is down
-    if drawing.pen_down and drawing.tool_id==0:
+    if drawing.pen_down and drawing.tool_id==1:
         drawing.draw_pixel()
 
     drawing.update_cursor()
 
     return True
 
-def parse_arguments():
-    parser = argparse.ArgumentParser(description='Pix - Minimalistic CLI Pixel Art Tool')
-    parser.add_argument('-f', '--file', type=str, help="Path to the image file to load.")
-    parser.add_argument('-W', '--width', type=int, default=64, help="Width of the canvas")
-    parser.add_argument('-H','--height', type=int, default=64, help="Height of the canvas")
-    parser.add_argument('--help', action='store_true', help='Show help message and exit.')
-#    parser.add_argument('-v', '--view', type=int, default=64, help="View size of the canvas")
-    args = parser.parse_args()
-    return args
+#def parse_arguments():
+#    parser = argparse.ArgumentParser(description='Pix - Minimalistic CLI Pixel Art Tool')
+#    parser.add_argument('-f', '--file', type=str, help="Path to the image file to load.")
+#    parser.add_argument('-W', '--width', type=int, default=64, help="Width of the canvas")
+#    parser.add_argument('-H','--height', type=int, default=64, help="Height of the canvas")
+#    parser.add_argument('--help', action='store_true', help='Show help message and exit.')
+##    parser.add_argument('-v', '--view', type=int, default=64, help="View size of the canvas")
+#    args = parser.parse_args()
+#    return args
     
-
-#def single_argument(arg):
-#    filename = None
-#    
-#    # Check if the argument is a string, ends with .hex, and is a valid file
-#    if isinstance(arg, str) and arg.endswith('.hex'):
-#        if os.path.isfile(arg) and os.access(arg, os.R_OK):
-#            # Attempt to read the first few bytes to confirm it's a text file
-#            with open(arg, 'rb') as file:
-#                first_bytes = file.read(512)  # Read first 512 bytes for checking
-#                try:
-#                    first_bytes.decode('utf-8')  # Try to decode to UTF-8
-#                    filename = arg  # It's a valid text file, set filename
-#                    break  # Stop once a valid filename is found
-#                except UnicodeDecodeError:
-#                    print(f"Warning: {arg} is not a text file.")
-#        else:
-#            print(f"Warning: {arg} is not a valid file or cannot be read.")
-#    
-#    return filename
         
 def main(stdscr):
     #args = parse_arguments()
 #    args = sys.argv[1:]
 #    filename = single_argument(args)
+
+#    if (sys.argv[1:]):
+#        filename = str(sys.argv[1:])
+    #else:
     filename = args.file if args.file else None
 
     #curses.curs_set(1)  # Make cursor visible
@@ -844,7 +855,8 @@ def main(stdscr):
     canvas_width = args.width if args.width else 64
     canvas_height = args.height if args.height else 64
 
-    drawing = Drawing(stdscr, filename=filename, width=canvas_width, background=args.background )
+    #background=args.background
+    drawing = Drawing(stdscr, filename=filename, width=canvas_width, background=-1 )
     drawing.update_cursor()  # Initial cursor update
     
     def signal_handler(sig, frame):
@@ -865,15 +877,35 @@ def main(stdscr):
 
 
 
+def is_valid_file(file_name):
+    if not os.path.isfile(file_name):
+        return False
+    
+    try:
+        with Image.open(file_name) as img:
+            img.verify()  # Verify the file is an image
+        return True
+    except (IOError, SyntaxError):
+        return False
+
+        
 parser = argparse.ArgumentParser(description='CLI drawing program.')
 parser = argparse.ArgumentParser(usage='(w,a,s,d) keys to move the cursor, (e) to export, (0 - 9) change the color, (b) bucket fill, (h,v) mirror pen, (r) reset canvas, (l) color wheel, (space) toggle pen, (enter) place single pixel, (U,F) Undo & Redo')
 parser.add_argument('-W','--width', type=int, default=64, help='Width of the image.')
 parser.add_argument('-H','--height', type=int, default=64, help='Height of the image.')
 parser.add_argument('-f','--file', type=str, help='File to load.')
-parser.add_argument('-b','--background', type=int, default=-1, help="Canvas background color")
-args = parser.parse_args()
+#args = parser.parse_args()
+args, unknown_args = parser.parse_known_args()
 
 
+# Handle the case where a single argument is passed
+if len(unknown_args) == 1:
+    potential_file = unknown_args[0]
+    if is_valid_file(potential_file):
+        args.file = potential_file
+    else:
+        print(f"Error: '{potential_file}' is not a valid file.")
+        exit(1)
 
 curses.wrapper(main)
 

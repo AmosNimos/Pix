@@ -1,3 +1,0 @@
-(Enter_ place pixel
-(Space) toggle pen
-(w,a,s,d) Movements
