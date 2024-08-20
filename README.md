@@ -31,8 +31,16 @@ Did you hear that Pix supports color? That’s right—up to 8 glorious colors a
 - **Copy tool:** To sample any color from the canvas.
 - **Mirror Tools:** Effortlessly mirror your creations, whether horizontally, vertically, or both!
 
-The source code of the project is in <a href="./pix.py">pix.py</a>
+## License
+
+This project is licensed under the [GNU Affero General Public License, Version 3](./LICENSE) (AGPLv3). See the [LICENSE](./LICENSE) file for more details.
+
+## Source Code
+
+The source code of the project can be found in <a href="./pix.py">pix.py</a>.
+
+> **Pix**: "You ain't ready for it!"
 
 ---
 
-Pix, you ain't ready for it!
+2024. Made with ❤ by <img src="./examples/amosnimos.png" alt="amosnimos"> 
