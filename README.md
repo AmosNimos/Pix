@@ -6,11 +6,11 @@ Pix is a minimalist image editor meticulously designed for pixel art and 2D anim
 
 ## Made in pix:
 
-<img src="./example_001.png">
-<img src="./example_002.png">
-<img src="./example_003.png">
-<img src="./example_004.png">
-<img src="./example_005.png">
+<img src="./examples/example_001.png">
+<img src="./examples/example_002.png">
+<img src="./examples/example_003.png">
+<img src="./examples/example_004.png">
+<img src="./examples/example_005.png">
 
 ## Mindset
 

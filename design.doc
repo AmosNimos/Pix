@@ -1,4 +1,0 @@
-The canvas is the drawable area where pixels can be placed,
-The palette is the colors available using the number key from 0 to 9 it can be loaded from a file as a list of hex color values.
-The tool can be selected with the number key as tool index + shift
-Being able to have temporary tool use for example use the pen but when it's lifted it return to the active tool.
