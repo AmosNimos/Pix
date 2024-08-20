@@ -1,0 +1,52 @@
+<schemalist gettext-domain="devhelp">
+  <schema id="org.gnome.devhelp" path="/org/gnome/devhelp/">
+    <child name="state" schema="org.gnome.devhelp.state"/>
+  </schema>
+  <schema id="org.gnome.devhelp.state" path="/org/gnome/devhelp/state/">
+    <child name="main" schema="org.gnome.devhelp.state.main"/>
+    <child name="assistant" schema="org.gnome.devhelp.state.assistant"/>
+  </schema>
+  <schema id="org.gnome.devhelp.state.main" path="/org/gnome/devhelp/state/main/">
+    <child name="window" schema="org.gnome.devhelp.state.main.window"/>
+    <child name="paned" schema="org.gnome.devhelp.state.main.paned"/>
+  </schema>
+  <schema id="org.gnome.devhelp.state.main.window" path="/org/gnome/devhelp/state/main/window/">
+    <key name="maximized" type="b">
+      <default>false</default>
+      <summary>Main window maximized state</summary>
+      <description>Whether the main window should start maximized.</description>
+    </key>
+    <key name="width" type="i">
+      <default>1000</default>
+      <summary>Width of the main window</summary>
+      <description>The width of the main window.</description>
+    </key>
+    <key name="height" type="i">
+      <default>500</default>
+      <summary>Height of main window</summary>
+      <description>The height of the main window.</description>
+    </key>
+  </schema>
+  <schema id="org.gnome.devhelp.state.main.paned" path="/org/gnome/devhelp/state/main/paned/">
+    <key name="position" type="i">
+      <default>300</default>
+      <summary>Width of the index and search pane</summary>
+      <description>The width of the index and search pane.</description>
+    </key>
+  </schema>
+  <schema id="org.gnome.devhelp.state.assistant" path="/org/gnome/devhelp/state/assistant/">
+    <child name="window" schema="org.gnome.devhelp.state.assistant.window"/>
+  </schema>
+  <schema id="org.gnome.devhelp.state.assistant.window" path="/org/gnome/devhelp/state/assistant/window/">
+    <key name="width" type="i">
+      <default>350</default>
+      <summary>Width of the assistant window</summary>
+      <description>The width of the assistant window.</description>
+    </key>
+    <key name="height" type="i">
+      <default>400</default>
+      <summary>Height of assistant window</summary>
+      <description>The height of the assistant window.</description>
+    </key>
+  </schema>
+</schemalist>

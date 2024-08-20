@@ -1,0 +1,213 @@
+<schemalist>
+  <schema id="org.nemiver" path="/apps/nemiver/">
+    <key name="dbg-perspective-layout" type="s">
+      <default>'default-layout'</default>
+      <summary>Layout of the perspective</summary>
+      <description>The layout that is loaded by the debugging perspective</description>
+    </key>
+
+    <key name="source-search-dirs" type="s">
+      <default>'.'</default>
+      <summary>source directory dirs</summary>
+      <description>The list of directories where to search for source files. This is used only when there is not enough information in the binary to locate the file.</description>
+    </key>
+
+    <key name="show-dbg-error-dialogs" type="b">
+      <default>false</default>
+      <summary>Show or don't show errors coming from the debugger engine</summary>
+      <description>If set to yes, popups error message dialogs showing errors coming from the underlying debugger engine.</description>
+    </key>
+
+    <key name="show-source-line-numbers" type="b">
+      <default>true</default>
+      <summary>Show or don't show source lines numbers</summary>
+      <description>If set to yes, show the source code line number on the left hand side of each line.</description>
+    </key>
+
+    <key name="confirm-before-reload-source" type="b">
+      <default>true</default>
+      <summary>Ask the user before reloading a source file</summary>
+      <description>When a source file needs to be reloaded, if this key is set to yes, ask the user before reloading.</description>
+    </key>
+
+    <key name="allow-auto-reload-source" type="b">
+      <default>true</default>
+      <summary>Do not automatically reload the source file</summary>
+      <description>If the user chooses not to be asked about re-loading changed source files and if this key is set to true, re-load the source file automatically.</description>
+    </key>
+
+    <key name="highlight-source-code" type="b">
+      <default>true</default>
+      <summary>Highlight source code</summary>
+      <description>If set to yes, highlight source code.</description>
+    </key>
+
+    <key name="use-system-font" type="b">
+      <default>true</default>
+      <summary>Whether to use the system font for the source editor</summary>
+      <description>Whether to use the system font for the source editor.</description>
+    </key>
+
+    <key name="custom-font-name" type="s">
+      <default>'monospace 12'</default>
+      <summary>The custom font to use if we're not using the system font</summary>
+      <description>The custom font to use for the source editor if we're not using the system font.</description>
+    </key>
+
+    <key name="use-launch-terminal" type="b">
+      <default>false</default>
+      <summary>Whether to use the terminal we were launched from</summary>
+      <description>Whether to use the terminal we were launched from as the debuggee's terminal, or to use our own embedded terminal.</description>
+    </key>
+
+    <key name="editor-style-scheme" type="s">
+      <default>'classic'</default>
+      <summary>The style of the source editor</summary>
+      <description>The name of the source editor color scheme.</description>
+    </key>
+
+    <key name="status-widget-minimum-width" type="i">
+      <default>0</default>
+      <summary>The minimum width of the status widget</summary>
+      <description>The minimum width of the status widget.</description>
+    </key>
+
+    <key name="status-widget-minimum-height" type="i">
+      <default>0</default>
+      <summary>The minimum height of the status widget</summary>
+      <description>The minimum height of the status widget.</description>
+    </key>
+
+    <key name="default-layout-pane-location" type="i">
+      <default>-1</default>
+      <summary>The location of the status pane for the default layout</summary>
+      <description>The location of the status pane for the default layout</description>
+    </key>
+
+    <key name="wide-layout-pane-location" type="i">
+      <default>-1</default>
+      <summary>The location of the status pane for the wide layout</summary>
+      <description>The location of the status pane for the wide layout</description>
+    </key>
+
+    <key name="two-pane-layout-vpane-location" type="i">
+      <default>-1</default>
+      <summary>The location of the vertical status pane for the two-pane layout</summary>
+      <description>The location of the vertical status pane for the two-pane layout</description>
+    </key>
+
+    <key name="two-pane-layout-hpane-location" type="i">
+      <default>-1</default>
+      <summary>The location of the horizontal status pane for the two-pane layout</summary>
+      <description>The location of the horizontalstatus pane for the two-pane layout</description>
+    </key>
+
+    <key name="debugger-engine-dynmod" type="s">
+      <default>'gdbengine'</default>
+      <summary>The underlying debugger engine management module</summary>
+      <description>The name of the debugger engine management module used.</description>
+    </key>
+
+    <key name="gdb-binary" type="s">
+      <default>'default-gdb-binary'</default>
+      <summary>The path to the GDB binary</summary>
+      <description>The absolute path to the GDB binary, otherwise, the default makes Nemiver pick the default system GDB</description>
+    </key>
+
+    <key name="asm-style-pure" type="b">
+      <default>false</default>
+      <summary>Show the assembly in pure form</summary>
+      <description>If set to yes, pure assembly code is shown when switching to assembly view. Otherwise, source code mixed with assembly code is shown.</description>
+    </key>
+
+    <key name="update-local-vars-at-each-stop" type="b">
+      <default>true</default>
+      <summary>Whether to update the list of local variables at each stop</summary>
+      <description>Updating the list of local variables lets the debugger show variables that are created way after the beginning of the function.  Disabling this option might speed up stepping but leads the debugger to miss local variables that are created after the beginning of the function.</description>
+    </key>
+
+    <key name="default-num-asm-instrs" type="i">
+      <default>25</default>
+      <summary>The number of assembly instructions to show by default</summary>
+      <description>The number of instructions that are disassembled by default.</description>
+    </key>
+
+    <key name="context-pane-location" type="i">
+      <default>-1</default>
+      <summary>The position of the splitter in the debug context tab</summary>
+      <description>The position of the splitter in the debug context tab.  This is saved by the UI automatically.</description>
+    </key>
+
+    <key name="follow-fork-mode" type="s">
+      <default>'parent'</default>
+      <summary>Which process to follow upon a fork</summary>
+      <description>If a fork happens, follow the parent parent process if the key is set to 'parent', or follow the child process if the key is set to 'child'.</description>
+    </key>
+
+    <key name="disassembly-flavor" type="s">
+      <default>'att'</default>
+      <summary>Which instruction set to use for the assembly</summary>
+      <description>Can be either att or intel (Apply only for the x86 family CPU)</description>
+    </key>
+
+    <key name ="pretty-printing" type="b">
+      <default>true</default>
+      <summary>Activate GDB pretty printing</summary>
+      <description>Activate the GDB pretty printing feature. Under that mode the content of many types of containers is displayed in a human friendly manner</description>
+    </key>
+
+    <key name="callstack-expansion-chunk" type="i">
+      <default>25</default>
+      <summary>The size of the call stack to display</summary>
+      <description>Do not automatically display call stack wider than this value.</description>
+    </key>
+
+    <key name="source-file-encoding-list" type="as">
+      <default>['UTF-8','ISO-8859','ISO-8859-1','ISO-8859-15']</default>
+      <summary>The list of of file encodings supported by nemiver</summary>
+      <description>When nemiver opens a file, it assumes the encoding of the file is one of the encodings listed here. Please bear in mind that Nemiver works internally with files in the UTF-8 encoding.  So when it loads a file, it must convert the file encoding into UTF-8. Therefore, Nemiver needs to know the possible set of encodings of the source files it opens.</description>
+    </key>
+
+    <key name="window-width" type="i">
+      <default>800</default>
+      <summary>window width</summary>
+      <description>The width of the workbench window.</description>
+    </key>
+
+    <key name="window-height" type="i">
+      <default>600</default>
+      <summary>window height</summary>
+      <description>The height of the workbench window.</description>
+    </key>
+
+    <key name="window-position-x" type="i">
+      <default>10</default>
+      <summary>window x position</summary>
+      <description>The X coordinate of the workbench window.</description>
+    </key>
+
+    <key name="window-position-y" type="i">
+      <default>10</default>
+      <summary>window y position</summary>
+      <description>The Y coordinate of the workbench window.</description>
+    </key>
+
+    <key name="window-maximized" type="b">
+      <default>false</default>
+      <summary>window maximization</summary>
+      <description>Whether the workbench window is maximized.</description>
+    </key>
+
+    <key name="window-minimum-width" type="i">
+      <default>0</default>
+      <summary>window minim width</summary>
+      <description>The workbench main window minium width.</description>
+    </key>
+
+    <key name="window-minimum-height" type="i">
+      <default>0</default>
+      <summary>window minimum height</summary>
+      <description>The workbench main window minium height.</description>
+    </key>
+  </schema>
+</schemalist>

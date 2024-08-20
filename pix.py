@@ -4,13 +4,16 @@ import argparse
 import curses
 import os
 import sys
+import re
 from PIL import Image
 from random import randint
 import math
 from collections import Counter
 
 class Drawing:
-    def __init__(self, stdscr, width=64, height=64, view_size=64, filename=None, background=0):
+    def __init__(self, stdscr, width=64, height=64, view_size=64, filename=None, background=1, palette="palette.hex"):
+
+        self.palette=palette
         self.stdscr = stdscr
         # for line pen:
         self.info_bar=True
@@ -64,8 +67,9 @@ class Drawing:
             random_color = (randint(0, 255), randint(0, 255), randint(0, 255))
             if random_color not in self.colors:
                 self.colors.append(random_color)
- 
-        self.load_rgb_from_file("pix.hex")
+
+        if self.valid_palette(self.palette):
+            self.load_rgb_from_file(self.palette)
         self.color_pairs = {}
         self.initialize_colors()
         self.pen_down = False  # Initialize pen state
@@ -73,6 +77,31 @@ class Drawing:
 
         if filename:
             self.load_image(filename)
+
+    def valid_palette(self,palette_file):
+        # Check if file exists
+        if not os.path.isfile(palette_file):
+            print(f"File '{palette_file}' does not exist.")
+            return False
+
+        valid_hex_pattern = re.compile(r'^#?[0-9a-fA-F]{6}$')
+        valid_hex_count = 0
+
+        # Open and read the file line by line
+        with open(palette_file, 'r') as file:
+            for line in file:
+                line = line.strip()
+                if valid_hex_pattern.match(line):
+                    valid_hex_count += 1
+
+        # Check if there are at least 8 valid hex color values
+        if valid_hex_count >= 8:
+            return True
+        else:
+            curses.endwin()  # End curses mode to allow normal input
+            print(f"File '{palette_file}' does not have enough valid hex color values.")
+            exit()
+            return False
 
     def hex_to_rgb(self,hex_color):
         """Convert a hex color to an RGB tuple."""
@@ -843,6 +872,7 @@ def main(stdscr):
 #        filename = str(sys.argv[1:])
     #else:
     filename = args.file if args.file else None
+    palette = args.palette if args.palette else "palette.hex"
 
     #curses.curs_set(1)  # Make cursor visible
 
@@ -856,7 +886,7 @@ def main(stdscr):
     canvas_height = args.height if args.height else 64
 
     #background=args.background
-    drawing = Drawing(stdscr, filename=filename, width=canvas_width, background=-1 )
+    drawing = Drawing(stdscr, filename=filename, width=canvas_width, background=-1, palette=palette)
     drawing.update_cursor()  # Initial cursor update
     
     def signal_handler(sig, frame):
@@ -890,10 +920,11 @@ def is_valid_file(file_name):
 
         
 parser = argparse.ArgumentParser(description='CLI drawing program.')
-parser = argparse.ArgumentParser(usage='(w,a,s,d) keys to move the cursor, (e) to export, (0 - 9) change the color, (b) bucket fill, (h,v) mirror pen, (r) reset canvas, (l) color wheel, (space) toggle pen, (enter) place single pixel, (U,F) Undo & Redo')
-parser.add_argument('-W','--width', type=int, default=64, help='Width of the image.')
-parser.add_argument('-H','--height', type=int, default=64, help='Height of the image.')
+parser = argparse.ArgumentParser(usage='(w,a,s,d) keys to move the cursor, (e) to export, (0 - 9) change the color, (b) bucket fill, (h,v) mirror pen, (space) toggle pen, (enter) place single pixel, (u) Undo')
+parser.add_argument('-W','--width', type=int, default=64, help='Width of the image. (default: 64)')
+parser.add_argument('-H','--height', type=int, default=64, help='Height of the image (default; 64).')
 parser.add_argument('-f','--file', type=str, help='File to load.')
+parser.add_argument('-p','--palette', type=str, help='palette file (default; palette.hex).')
 #args = parser.parse_args()
 args, unknown_args = parser.parse_known_args()
 
