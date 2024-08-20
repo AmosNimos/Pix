@@ -43,8 +43,7 @@ The source code of the project can be found in <a href="./pix.py">pix.py</a>.
 
 ---
 
-2024. Made with ❤ by
-
-<a href="https://amosnimos.com" target="_blank">
+2024. Made with ❤ by  <a href="https://amosnimos.com" target="_blank">
     <img src="./examples/amosnimos.png" alt="amosnimos">
 </a>
+
