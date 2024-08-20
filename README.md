@@ -29,13 +29,13 @@ Did you hear that Pix supports color? That’s right—up to 8 glorious colors a
 ## Tools
 
 - **Dot tool:** A tool for placing single pixel. (This might be the simplest tool in the shed, but don’t let it know! It places dots—yes, dots are pixels. If you’re wondering why it’s not called the Pixel Tool, it’s because two tools starting with the same letter is a sin I can’t forgive! We already have the Pen Tool with a "P"—don’t be greedy. Why didn’t I name the Pen Tool something else? I didn’t think of anything better, so deal with it or contribute to the project, you cheeky devil!)
-- **Pen Tool:** Precision at your fingertips for those perfect pixel strokes. (The Pen Tool—imagine if you accidentally left the Dot Tool on and then tried to draw with it. Voilà, you’ve got the Pen Tool! It’s like a fancy line tool that sometimes just wants to take the scenic route.)
-- **Rect tool:** A tool for making rectangles. (The Rect Tool—because who doesn’t need a tool that makes rectangles? Forget rectums or rectifying anything; it’s just for rectangles. Now you know!)
+- **Pen Tool:** Precision at your fingertips for those perfect pixel strokes. (Imagine if you accidentally left the Dot Tool on and then tried to draw with it. Voilà, you’ve got the Pen Tool! It’s like a fancy line tool that sometimes just wants to take the scenic route.)
+- **Rect tool:** A tool for making rectangles. (Because who doesn’t need a tool that makes rectangles? Forget rectums or rectifying anything; it’s just for rectangles. Now you know!)
 - **Ellipse tool:** A tool for making ellipses (Who could have guessed!).
 - **Line tool:** A tool for making lines (Who knew a Line Tool was for lines? Genius, right?)
-- **Bucket Fill:** Rapidly fill areas with your chosen color, with even more excitement on the way! (The Bucket Fill Tool—oh, the complexity! Forget the bucket; it fills the area under the cursor with the selected color. Sounds tricky, but really, just play with it and you’ll get the hang of it. I’m not writing a “For Dummies” guide—figure it out yourself!)
-- **Copy tool:** To sample any color from the canvas. (The Copy Tool—because “Pipette” and “Pick” both start with P, and we can't have that. I thought about calling it the “Clone Tool,” but “Copy” works too. Missed opportunity, but hey, enjoy sampling colors!)
-- **Mirror Tools:** Effortlessly mirror your creations, whether horizontally, vertically, or both! (The Mirror Tool—because “Reflect Tool” was too fancy, and we’ve already got the Rect Tool with an “R.” Don’t even get me started on why two tools starting with the same letter is a no-no!)
+- **Bucket Fill:** Rapidly fill areas with your chosen color, with even more excitement on the way! (Oh, the complexity! Forget the bucket; it fills the area under the cursor with the selected color. Sounds tricky, but really, just play with it and you’ll get the hang of it. I’m not writing a “For Dummies” guide—figure it out yourself!)
+- **Copy tool:** To sample any color from the canvas. (Because “Pipette” and “Pick” both start with P, and we can't have that. I thought about calling it the “Clone Tool,” but “Copy” works too. Missed opportunity, but hey, enjoy sampling colors!)
+- **Mirror Tools:** Effortlessly mirror your creations, whether horizontally, vertically, or both! (Because “Reflect Tool” was too fancy, and we’ve already got the Rect Tool with an “R.” Don’t even get me started on why two tools starting with the same letter is a no-no!)
 
 
 ## Itch.io
