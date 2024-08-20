@@ -4,6 +4,8 @@ Welcome to **Pix**, arguably the pinnacle of CLI pixel art tools!
 
 Pix is a minimalist image editor meticulously designed for pixel art and 2D animation, operating effortlessly in terminal emulators. Developed in Python and licensed under the GNU Affero General Public License, Pix is your streamlined command-line solution for crafting and editing pixel art. It’s stripped of unnecessary bloat while delivering essential features like mirroring and bucket fill. With its SSH compatibility, Pix is a groundbreaking tool for terminal-based pixel art creation in color!
 
+Check out the Pix program stable release on itch.io! It’s an alternative way to get the program and helps support its development through optional donations. Your contribution, no matter how small. Visit [Pix on itch.io](https://amos-nimos.itch.io/pix) to download and support the project. Thank you!
+
 ## Made in pix:
 
 <img src="./examples/example_001.png">
