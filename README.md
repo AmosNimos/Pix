@@ -3,6 +3,7 @@
 Welcome to **Pix**, arguably the pinnacle of CLI pixel art tools!
 
 Pix is a minimalist, keyboard-only pixel art editor with a basic CLI interface. By embracing a limited palette and simple tools, it challenges you to harness creativity within constraints. In a landscape where keyboard-only CLI tools are nearly non-existent, Pix stands out by turning minimalism into a powerful canvas.
+
 Pix is meticulously designed for 2D pixel art, operating effortlessly in terminal emulators. Developed in Python and licensed under the GNU Affero General Public License, Pix is your streamlined command-line solution for crafting and editing pixel art. It’s stripped of unnecessary bloat while delivering the most essential features. Pix is a groundbreaking tool for terminal-based pixel art creation in color!
 
 
