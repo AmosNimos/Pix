@@ -2,14 +2,15 @@
 
 Welcome to **Pix**, arguably the pinnacle of CLI pixel art tools!
 
-Pix is a minimalist image editor meticulously designed for pixel art and 2D animation, operating effortlessly in terminal emulators and fully TTY interfaces. Developed in Python and licensed under the GNU Affero General Public License, Pix is your streamlined command-line solution for crafting and editing pixel art. It’s stripped of unnecessary bloat while delivering essential features like mirroring and bucket fill. With its SSH compatibility, Pix is a groundbreaking tool for terminal-based pixel art creation in full color!
+Pix is a minimalist image editor meticulously designed for pixel art and 2D animation, operating effortlessly in terminal emulators. Developed in Python and licensed under the GNU Affero General Public License, Pix is your streamlined command-line solution for crafting and editing pixel art. It’s stripped of unnecessary bloat while delivering essential features like mirroring and bucket fill. With its SSH compatibility, Pix is a groundbreaking tool for terminal-based pixel art creation in color!
 
-<img src="./example_001.png"><p>Made in pix</p>
-<img src="./example_002.png"><p>Made in pix</p>
-<img src="./example_003.png"><p>Made in pix</p>
-<img src="./example_004.png"><p>Made in pix</p>
-<img src="./example_005.png"><p>Made in pix</p>
+## Made in pix:
 
+<img src="./example_001.png">
+<img src="./example_002.png">
+<img src="./example_003.png">
+<img src="./example_004.png">
+<img src="./example_005.png">
 
 ## Mindset
 
@@ -21,12 +22,17 @@ Did you hear that Pix supports color? That’s right—up to 8 glorious colors a
 
 ## Tools
 
+- **Dot tool:** A tool for placing single pixel.
 - **Pen Tool:** Precision at your fingertips for those perfect pixel strokes.
+- **Rect tool:** A tool for making rectangles.
+- **Ellipse tool:** A tool for making ellipses.
+- **Line tool:** A tool for making lines.
 - **Bucket Fill:** Rapidly fill areas with your chosen color, with even more excitement on the way!
+- **Copy tool:** To sample any color from the canvas.
 - **Mirror Tools:** Effortlessly mirror your creations, whether horizontally, vertically, or both!
 
 The source code of the project is in <a href="./pix.py">pix.py</a>
 
 ---
 
-Pix you ain't ready for it!
+Pix, you ain't ready for it!
