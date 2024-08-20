@@ -2,9 +2,9 @@
 
 Welcome to **Pix**, arguably the pinnacle of CLI pixel art tools!
 
-Pix is a minimalist image editor meticulously designed for pixel art and 2D animation, operating effortlessly in terminal emulators. Developed in Python and licensed under the GNU Affero General Public License, Pix is your streamlined command-line solution for crafting and editing pixel art. It’s stripped of unnecessary bloat while delivering essential features like mirroring and bucket fill. With its SSH compatibility, Pix is a groundbreaking tool for terminal-based pixel art creation in color!
+Pix is a minimalist, keyboard-only pixel art editor with a basic CLI interface. By embracing a limited palette and simple tools, it challenges you to harness creativity within constraints. In a landscape where keyboard-only CLI tools are nearly non-existent, Pix stands out by turning minimalism into a powerful canvas.
+Pix is meticulously designed for 2D pixel art, operating effortlessly in terminal emulators. Developed in Python and licensed under the GNU Affero General Public License, Pix is your streamlined command-line solution for crafting and editing pixel art. It’s stripped of unnecessary bloat while delivering the most essential features. Pix is a groundbreaking tool for terminal-based pixel art creation in color!
 
-Check out the Pix program stable release on itch.io! It’s an alternative way to get the program and helps support its development through optional donations. Your contribution, no matter how small. Visit [Pix on itch.io](https://amos-nimos.itch.io/pix) to download and support the project. Thank you!
 
 ## Made in pix:
 
@@ -33,6 +33,11 @@ Did you hear that Pix supports color? That’s right—up to 8 glorious colors a
 - **Copy tool:** To sample any color from the canvas.
 - **Mirror Tools:** Effortlessly mirror your creations, whether horizontally, vertically, or both!
 
+
+## Itch.io
+
+Check out the Pix program stable release on itch.io! It’s an alternative way to get the program and helps support its development through optional donations. Your contribution, no matter how small, is greatly appreciated. Visit [Pix on itch.io](https://amos-nimos.itch.io/pix) to download and support the project. Thank you!
+
 ## License
 
 This project is licensed under the [GNU Affero General Public License, Version 3](./LICENSE) (AGPLv3). See the [LICENSE](./LICENSE) file for more details.
@@ -41,7 +46,8 @@ This project is licensed under the [GNU Affero General Public License, Version 3
 
 The source code of the project can be found in <a href="./pix.py">pix.py</a>.
 
-> **Pix**: "You ain't ready for it!"
+> Pix: "Pixel Art at Your Fingertips"
+
 
 ---
 
