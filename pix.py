@@ -1,4 +1,5 @@
 # Pixel-art Independent of X11 or P.I.X for short
+
 import signal
 import argparse
 import curses
@@ -9,6 +10,76 @@ from PIL import Image
 from random import randint
 import math
 from collections import Counter
+
+# [TODO] :
+# - Fix the ellipse tool sometime not being pixel accurate.
+# - Add customizable keymapping options
+
+# Default key bindings
+default_keymap = {
+    "move_up": [curses.KEY_UP, ord('w')],
+    "move_down": [curses.KEY_DOWN, ord('s')],
+    "move_left": [curses.KEY_LEFT, ord('a')],
+    "move_right": [curses.KEY_RIGHT, ord('d')],
+    "perform_action": [ord(' '), ord('\n'), ord('x')],
+    "save_and_quit": [ord('q')],
+    "save_with_confirm": [ord('Q')],
+    "toggle_info_bar": [ord('g')],
+    "increase_color": [ord('=')],
+    "decrease_color": [ord('-')],
+    "next_tool": [ord('+')],
+    "previous_tool": [ord('_')],
+    "select_tool_0": [ord('!')],
+    "select_tool_1": [ord('@')],
+    "select_tool_2": [ord('#')],
+    "select_tool_3": [ord('$')],
+    "select_tool_4": [ord('%')],
+    "select_tool_5": [ord('^')],
+    "select_tool_6": [ord('&')],
+    "bucket_fill": [ord('b')],
+    "toggle_horizontal_mirroring": [ord('h')],
+    "toggle_vertical_mirroring": [ord('v')],
+    "hex_prompt": [ord('H')],
+    "hex_export": [ord('E')],
+}
+
+def load_keymap(filename, keymap):
+    key_aliases = {
+        "space": ord(' '),
+        "enter": ord('\n'),
+        ";": ord(';'),
+        "dot": ord('.'),
+        "comma": ord(','),
+        ">": ord('>'),
+        "<": ord('<'),
+        # Add more aliases if needed
+    }
+
+    try:
+        with open(filename, 'r') as file:
+            for line in file:
+                if '::' in line:
+                    action, keys = line.strip().split('::')
+                    keys = keys.split(',')
+                    key_list = []
+                    for key in keys:
+                        key = key.strip()
+                        if len(key) == 1:  # Single character
+                            key_list.append(ord(key))
+                        elif key in key_aliases:
+                            key_list.append(key_aliases[key])
+                        else:
+                            raise ValueError(f"Unknown key alias: {key}")
+
+                    if action in keymap:
+                        keymap[action] = key_list
+    except FileNotFoundError:
+        print(f"Keymap file '{filename}' not found. Using default key bindings.")
+    except ValueError as e:
+        print(f"Error in keymap file: {e}")
+
+    return keymap
+    
 
 class Drawing:
     def __init__(self, stdscr, width=64, height=64, view_size=64, filename=None, background=1, palette="palette.hex"):
@@ -348,50 +419,16 @@ class Drawing:
         if (self.pen_down):
             char='◘'
         else:
-#            if self.tool_id == 0: # Line tool
-#                char='•'
-#            elif self.tool_id == 1: # Rect tool
-#                char="🖍"
-#            elif self.tool_id == 2: # Picker tool
-#                char="🖋"
-#            elif self.tool_id == 3: # Pixel tool
-#                char="🖌"             
-#            else:
-            #char=str(self.tool_id)
             char="•"
 
         if self.color_pair != 1: # if black turn to white (cause black on black ain't visible)
             color = curses.color_pair(self.color_pair) # set to active color
         else:
             color = curses.color_pair(2) | curses.A_REVERSE # set to white
-#            if (self.pen_down):
-#                char='X'
-#            else:
-#                char='x'
 
 
         self.stdscr.addch(self.view_size // 2, self.view_size // 2, char, color)
         self.stdscr.move(self.view_size // 2, self.view_size // 2)
-
-    # Get the closest even if not exact match
-#    def get_closest_color_id(self, rr, gg, bb):
-#        for i, (r, g, b) in enumerate(self.colors):
-#            if (r, g, b) == (rr, gg, bb):
-#                return self.color_pairs[i+1]
-#
-#        closest_index = None
-#        min_distance = float('inf')
-#
-#        for i, (r, g, b) in enumerate(self.colors):
-#            # Calculate the Euclidean distance between the colors
-#            distance = math.sqrt((rr - r) ** 2 + (gg - g) ** 2 + (bb - b) ** 2)
-#            
-#            if distance < min_distance:
-#                min_distance = distance
-#                closest_index = i
-#
-#        # Return the closest color pair if found, otherwise return -1
-#        return self.color_pairs[closest_index+1] if closest_index is not None else -1
 
     def get_closest_color_id(self, rr, gg, bb, threshold=30):
         for i, (r, g, b) in enumerate(self.colors):
@@ -638,35 +675,69 @@ class Drawing:
 
 
     def hex_prompt(self):
-        if self.color_pair-1>1: # don't overwrite the default (black and white)
-            curses.endwin()  # End curses mode to allow normal input
-            hex_color = input("Enter hex color (e.g., #ff5733 or ff5733): ").strip()
+        if self.color_pair<3: # don't overwrite the default (black and white)
+            self.color_pair=3
+        curses.endwin()  # End curses mode to allow normal input
+        hex_color = input("Enter hex color (e.g., #ff5733 or ff5733): ").strip()
 
-            # Remove the '#' if it's present
-            if hex_color.startswith("#"):
-                hex_color = hex_color[1:]
+        # Remove the '#' if it's present
+        if hex_color.startswith("#"):
+            hex_color = hex_color[1:]
 
-            # Ensure the input is exactly 6 characters long
-            if len(hex_color) != 6:
-                raise ValueError("Invalid hex color. Please provide a 6-character hex value.")
+        # Ensure the input is exactly 6 characters long
+        if len(hex_color) != 6:
+            raise ValueError("Invalid hex color. Please provide a 6-character hex value.")
 
-            # Convert hex to RGB
-            r = int(hex_color[0:2], 16)
-            g = int(hex_color[2:4], 16)
-            b = int(hex_color[4:6], 16)
+        # Convert hex to RGB
+        r = int(hex_color[0:2], 16)
+        g = int(hex_color[2:4], 16)
+        b = int(hex_color[4:6], 16)
 
-            # set the color
-            self.color = (r, g, b)
-            self.colors[self.color_pair-1]=self.color
+        # set the color
+        self.color = (r, g, b)
+        self.colors[self.color_pair-1]=self.color
 
-            # update the color palette
-            self.initialize_colors()
+        # update the color palette
+        self.initialize_colors()
 
-            curses.setupterm()
+        curses.setupterm()
+
+
+
+
+    def export_colors_to_hex(self):
+        import curses
+        curses.endwin()  # End curses mode to allow normal input
+
+        # Prompt the user for the output file name
+        print("Exporting current color pallet to .hex file.")
+        filename = input("Enter the name for the output file (no extension): ")
+        
+        # Define colors to ignore
+        colors_to_ignore = [(0, 0, 0), (255, 255, 255)]  # Black and White
+
+        # Filter out the colors we want to ignore
+        filtered_colors = [color for color in self.colors if color not in colors_to_ignore]
+
+        # Ensure we only export up to 8 colors, even after filtering
+        colors_to_export = filtered_colors[:8]
+    
+        # Prepare the file name with .hex extension
+        hex_filename = f"{filename}.hex"
+
+        try:
+            with open(hex_filename, 'w') as file:
+                for color in colors_to_export:
+                    # Convert RGB to hexadecimal format
+                    hex_color = "#{:02X}{:02X}{:02X}".format(color[0], color[1], color[2])
+                    file.write(f"{hex_color}\n")
+            print(f"Colors exported successfully to {hex_filename}")
+        except IOError as e:
+            print(f"Error writing file {hex_filename}: {e}")
+
         
 
     # use the color wheel from the color picker class
-
     def save_image(self, filename=None, confirm="n"):
         if filename is None:
             curses.endwin()  # End curses mode to allow normal input
@@ -720,148 +791,115 @@ class Drawing:
         if self.screenshots:
             self.image = self.screenshots.pop()
 
-def handle_input(key, drawing):
-    if key == 'KEY_UP' or key == 'KEY_DOWN' or key == 'KEY_LEFT' or key == 'KEY_RIGHT' or key == ' ' or key == 'b' or key == 'x':
-        drawing.perform_action()
-        drawing.undo_stack.append(drawing.take_screenshot())
-        if len(drawing.undo_stack) > drawing.max_history_steps:
-            drawing.undo_stack.pop(0)
-        drawing.redo_stack.clear()
-
-    if key == ord('q'):
-        drawing.save_image('pix.save.png')
-        return False  # Quit on 'q'
-    if key == ord('Q'):
-        drawing.save_image('pix.save.png', confirm="y")
-        return False  # Quit on 'q'
+def handle_input(key, drawing, keymap):
     if key in map(ord, '0123456789'):
         drawing.set_color(int(chr(key)))
-    elif key == ord('e'):  # 'e' to save and quit
-        drawing.save_image(filename=drawing.filename)  # Save with default or user-provided filename
-        return False
-    elif key == ord('S'):  # 'S' to save image
-        drawing.save_image(filename=drawing.filename)  # Save with default or user-provided filename
-    elif key == ord('u'):  # 'e' to save and quit
-        drawing.load_screenshot() # load variable screenshot to current image
-    elif key == curses.KEY_UP or key == ord('w'):
+    elif key in keymap['move_up']:
         drawing.move_cursor('UP')
-    elif key == curses.KEY_DOWN or key == ord('s'):
+    elif key in keymap['move_down']:
         drawing.move_cursor('DOWN')
-    elif key == curses.KEY_LEFT or key == ord('a'):
+    elif key in keymap['move_left']:
         drawing.move_cursor('LEFT')
-    elif key == curses.KEY_RIGHT or key == ord('d'):
+    elif key in keymap['move_right']:
         drawing.move_cursor('RIGHT')
-    elif key == ord('g'):
-        drawing.info_bar = not drawing.info_bar
-    if key == ord(' ') or key == ord('\n'):
+    elif key in keymap['perform_action']:
+        # NOTE!: ALL OF THIS COULD BE IN THE PERFORM ACTION FUNCTION OF THE DRAWING CLASS
+        #drawing.perform_action()
+
         if not drawing.pen_down:
             drawing.save_image('pix.save.0.png', confirm="y")
-            drawing.take_screenshot() # save current image to variable screenshot
+            drawing.take_screenshot() # save current image to variable scre>
 
         # Tools actions
-        # self.tools = ["Dot","Pen","Bucket","Line","Rect","Ellipse","Copy"]
-        if drawing.tool_id==0:
-            # dot
+        if drawing.tool_id==0: # DOT
             drawing.pen_down = False
             drawing.draw_pixel()                        
-        elif drawing.tool_id==1:
-            # pen
+        elif drawing.tool_id==1: # PEN
             drawing.pen_down = not drawing.pen_down
-        elif drawing.tool_id==2:
-            # buket
+        elif drawing.tool_id==2: # BUCKET
             drawing.bucket_fill(drawing.cursor_x, drawing.cursor_y, drawing.color)
-        elif drawing.tool_id==3:
+        elif drawing.tool_id==3: # LINE
             drawing.draw_line()            
-        elif drawing.tool_id==4:
+        elif drawing.tool_id==4: # RECT
             drawing.draw_rect()            
-        elif drawing.tool_id==5:
+        elif drawing.tool_id==5: # ELLIPSE
             drawing.draw_ellipse()            
-        elif drawing.tool_id==6:
+        elif drawing.tool_id==6: # COPY
             drawing.pick_pixel()    
             drawing.tool_id=0
             drawing.pen_down = False
 
-    elif key == ord('h'):
-        drawing.toggle_horizontal_mirroring()
-    elif key == ord('v'):
-        drawing.toggle_vertical_mirroring()
-    elif key == ord('H'):
-        # Right now this is for entering custom hex values
-        drawing.hex_prompt()
-    elif key == ord('n'):
-        drawing.noise_texture()
-    # Once I nail the color selection these could be use to swap tools
-    if key == ord('='):
+    elif key in keymap['save_and_quit']:
+        drawing.save_image('pix.save.png')
+        return False  # Quit
+
+    elif key in keymap['save_with_confirm']:
+        drawing.save_image('pix.save.png', confirm="y")
+        return False  # Quit
+
+    elif key in keymap['toggle_info_bar']:
+        drawing.info_bar = not drawing.info_bar
+
+    elif key in keymap['increase_color']:
         drawing.increase_color()
-    if key == ord('-'):
+
+    elif key in keymap['decrease_color']:
         drawing.decrease_color()
 
-    # Tools:
-    if key == ord('+'):
+    elif key in keymap['next_tool']:
         drawing.pen_down = False
-        if drawing.tool_id<drawing.tool_count:
-            drawing.tool_id+=1
+        if drawing.tool_id < drawing.tool_count:
+            drawing.tool_id += 1
         else:
-            drawing.tool_id=0    
+            drawing.tool_id = 0
 
-    if key == ord('_'):
+    elif key in keymap['previous_tool']:
         drawing.pen_down = False
-        if drawing.tool_id>0:
-            drawing.tool_id-=1
+        if drawing.tool_id > 0:
+            drawing.tool_id -= 1
         else:
-            drawing.tool_id=drawing.tool_count    
+            drawing.tool_id = drawing.tool_count
 
-    # NOTE: The tool_id is offset to the number key by one        
-    if key == ord('!'):
-        drawing.tool_id=0
-    elif key == ord('@'):
-        drawing.tool_id=1
-    elif key == ord('#'):
-        drawing.tool_id=2
-    elif key == ord('$'):
-        drawing.tool_id=3
-    elif key == ord('%'):
-        drawing.tool_id=4
-    elif key == ord('^'):
-        drawing.tool_id=5
-    elif key == ord('&'):
-        drawing.tool_id=6
+    elif key in keymap['select_tool_0']: # DOT TOOL
+        drawing.tool_id = 0
+    elif key in keymap['select_tool_1']: # PEN TOOL
+        drawing.tool_id = 1
+    elif key in keymap['select_tool_2']: # BUCKET TOOL
+        drawing.tool_id = 2
+    elif key in keymap['select_tool_3']: # LINE TOOL
+        drawing.tool_id = 3
+    elif key in keymap['select_tool_4']: # RECT TOOL 
+        drawing.tool_id = 4
+    elif key in keymap['select_tool_5']: # ELLIPSE TOOL
+        drawing.tool_id = 5
+    elif key in keymap['select_tool_6']: # COPY TOOL
+        drawing.pick_pixel()    
+        drawing.tool_id = 6
 
-    # copy color
-    if key == ord('c'):
-        drawing.pick_pixel()
-        drawing.tool_id=0
-        drawing.pen_down = False
-    # pen
-    elif key == ord('D'):
-        drawing.draw_pixel()            
-    elif key == ord('p'):
-        drawing.tool_id=1
-        drawing.pen_down = not drawing.pen_down
-    elif key == ord('b'):  # Bucket fill
-        #drawing.tool_id=2
-        drawing.take_screenshot() # save current image to variable screenshot
+    elif key in keymap['bucket_fill']:
+        drawing.take_screenshot()  # Save current image to variable screenshot
         drawing.save_image('pix.save.0.png', confirm="y")
         drawing.bucket_fill(drawing.cursor_x, drawing.cursor_y, drawing.color)
-                    
-    # Drawing logic if pen is down
-    if drawing.pen_down and drawing.tool_id==1:
+    
+    elif key in keymap['toggle_horizontal_mirroring']:
+        drawing.toggle_horizontal_mirroring()
+
+    elif key in keymap['toggle_vertical_mirroring']:
+        drawing.toggle_vertical_mirroring()
+
+    if key in keymap['hex_prompt']:
+        drawing.hex_prompt()
+
+    if key in keymap['hex_export']:
+        drawing.export_colors_to_hex()
+
+    # Check for pen down and specific tools
+    if drawing.pen_down and drawing.tool_id == 1:
         drawing.draw_pixel()
 
     drawing.update_cursor()
-
     return True
 
-#def parse_arguments():
-#    parser = argparse.ArgumentParser(description='Pix - Minimalistic CLI Pixel Art Tool')
-#    parser.add_argument('-f', '--file', type=str, help="Path to the image file to load.")
-#    parser.add_argument('-W', '--width', type=int, default=64, help="Width of the canvas")
-#    parser.add_argument('-H','--height', type=int, default=64, help="Height of the canvas")
-#    parser.add_argument('--help', action='store_true', help='Show help message and exit.')
-##    parser.add_argument('-v', '--view', type=int, default=64, help="View size of the canvas")
-#    args = parser.parse_args()
-#    return args
-    
         
 def main(stdscr):
     #args = parse_arguments()
@@ -902,12 +940,12 @@ def main(stdscr):
     while True:
         stdscr.refresh()
         key = stdscr.getch()
-        if not handle_input(key, drawing):
+        if not handle_input(key, drawing,keymap):
             break
 
 
 
-def is_valid_file(file_name):
+def is_valid_img(file_name):
     if not os.path.isfile(file_name):
         return False
     
@@ -925,14 +963,20 @@ parser.add_argument('-W','--width', type=int, default=64, help='Width of the ima
 parser.add_argument('-H','--height', type=int, default=64, help='Height of the image (default; 64).')
 parser.add_argument('-f','--file', type=str, help='File to load.')
 parser.add_argument('-p','--palette', type=str, help='palette file (default; palette.hex).')
+parser.add_argument('-k','--keymap', type=str, default="default.key", help='Keymap file (default: default.key).')
 #args = parser.parse_args()
 args, unknown_args = parser.parse_known_args()
+
+
+# Load keymap from a file
+keymap = load_keymap(args.keymap, default_keymap)
 
 
 # Handle the case where a single argument is passed
 if len(unknown_args) == 1:
     potential_file = unknown_args[0]
-    if is_valid_file(potential_file):
+    # check if the file exist and is an image
+    if is_valid_img(potential_file):
         args.file = potential_file
     else:
         print(f"Error: '{potential_file}' is not a valid file.")

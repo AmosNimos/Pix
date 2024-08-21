@@ -92,6 +92,10 @@ Your drawing program offers a versatile palette system with the following featur
 - **`e`**: **Enter Name, Export, and Quit**  
   - Prompts you to enter a file name for the image. After providing a name, the program saves the image and quits. This gives you full control over the file name before exiting.
 
+- **`E`**: **Export current color palette**  
+  - Prompts you to enter a name for the color palette file.
+
+
 - **`q`**: **Ask to Save, Enter File Name, and Quit**  
   - When you press `q`, the program asks if you want to save the current image before quitting. If you confirm, it will prompt you to enter a file name, with the default being "pix.save.png". After saving, the program will exit. If you decline, the program will quit without saving.
 

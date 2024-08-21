@@ -1,10 +1,14 @@
 <img src="./pix.png" alt="./PIX">
 
+> Pixel-art Independent of X11 or P.I.X for short
+
 Welcome to **Pix**, arguably the pinnacle of CLI pixel art tools!
 
 Pix is a minimalist, keyboard-only pixel art editor with a basic CLI interface. By embracing a limited palette and simple tools, it challenges you to harness creativity within constraints. In a landscape where keyboard-only CLI tools are nearly non-existent, Pix stands out by turning minimalism into a powerful canvas.
 
-Pix is meticulously designed for 2D pixel art, operating effortlessly in terminal emulators. Developed in Python and licensed under the GNU Affero General Public License, Pix is your streamlined command-line solution for crafting and editing pixel art. It’s stripped of unnecessary bloat while delivering the most essential features. Pix is a groundbreaking tool for terminal-based pixel art creation in color!
+## Overview
+
+Pix is meticulously designed for 2D pixel art, operating effortlessly in terminal emulators like bash. Developed in Python and licensed under the [AGPLv3 License](./LICENSE), Pix is your streamlined command-line solution for crafting and editing pixel art. It’s stripped of unnecessary bloat while delivering the most essential features. Pix is the most basic tool for terminal-based pixel art creation in color!
 
 
 ## Mindset
@@ -31,14 +35,31 @@ Pix lets you load .hex files, just like those you find on sites like [Lospec](ht
 
 ### Tools
 
-- **Dot tool:** A tool for placing single pixel. (This might be the simplest tool in the shed, but don’t let it know! It places dots—yes, dots are pixels. If you’re wondering why it’s not called the Pixel Tool, it’s because two tools starting with the same letter is a sin I can’t forgive! We already have the Pen Tool with a "P"—don’t be greedy. Why didn’t I name the Pen Tool something else? I didn’t think of anything better, so deal with it or contribute to the project, you cheeky devil!)
-- **Pen Tool:** Precision at your fingertips for those perfect pixel strokes. (Imagine if you accidentally left the Dot Tool on and then tried to draw with it. Voilà, you’ve got the Pen Tool! It’s like a fancy line tool that sometimes just wants to take the scenic route.)
-- **Rect tool:** A tool for making rectangles. (Because who doesn’t need a tool that makes rectangles? Forget rectums or rectifying anything; it’s just for rectangles. Now you know!)
-- **Ellipse tool:** A tool for making ellipses (Who could have guessed!).
-- **Line tool:** A tool for making lines (Who knew a Line Tool was for lines? Genius, right?)
-- **Bucket Fill:** Rapidly fill areas with your chosen color, with even more excitement on the way! (Oh, the complexity! Forget the bucket; it fills the area under the cursor with the selected color. Sounds tricky, but really, just play with it and you’ll get the hang of it. I’m not writing a “For Dummies” guide—figure it out yourself!)
-- **Copy tool:** To sample any color from the canvas. (Because “Pipette” and “Pick” both start with P, and we can't have that. I thought about calling it the “Clone Tool,” but “Copy” works too. Missed opportunity, but hey, enjoy sampling colors!)
-- **Mirror Tools:** Effortlessly mirror your creations, whether horizontally, vertically, or both! (Because “Reflect Tool” was too fancy, and we’ve already got the Rect Tool with an “R.” Don’t even get me started on why two tools starting with the same letter is a no-no!)
+- **Dot tool:** A tool for placing single pixel. 
+
+> (This might be the simplest tool in the shed, but don’t let it know! It places dots—yes, dots are pixels. If you’re wondering why it’s not called the Pixel Tool, it’s because two tools starting with the same letter is a sin I can’t forgive! We already have the Pen Tool with a "P"—don’t be greedy. Why didn’t I name the Pen Tool something else? I didn’t think of anything better, so deal with it or contribute to the project, you cheeky devil!)
+
+- **Pen Tool:** Imagine if you accidentally left the Dot Tool on and then tried to draw with it. Voilà, you’ve got the Pen Tool! It’s like a fancy line tool that sometimes just wants to take the scenic route.
+- **Rect tool:** A tool for making rectangles. 
+
+> (Because who doesn’t need a tool that makes rectangles? Forget rectums or rectifying anything; it’s just for rectangles. Now you know!)
+
+- **Ellipse tool:** A tool for making ellipses 
+
+> (Who could have guessed!).
+
+- **Line tool:** A tool for making lines 
+
+> (Who knew a Line Tool was for lines? Genius, right?)
+
+- **Bucket Fill:** Rapidly fill areas with your chosen color, with even more excitement on the way! (Forget the bucket thing; it fills the area under the cursor with the selected color. Just play with it and you’ll get the hang of it. I’m not writing a “For Dummies” guide—figure it out yourself!)
+- **Copy tool:** To sample any color from the canvas. 
+
+> (Because “Pipette” and “Pick” both start with P, and we can't have that. I thought about calling it the “Clone Tool,” but “Copy” works too. Missed opportunity, but hey. )
+
+- **Mirror Tools:** Effortlessly mirror your creations, whether horizontally, vertically, or both! 
+
+> (Because “Reflect Tool” was too fancy and we ain't playing UNO in here. We’ve already got the Rect Tool with an “R.” Don’t even get me started on why two tools starting with the same letter is a no-no!)
 
 ## Itch.io
 
@@ -52,8 +73,7 @@ This project is licensed under the [GNU Affero General Public License, Version 3
 
 The source code of the project can be found in <a href="./pix.py">pix.py</a>.
 
-> Pix: "Pixel Art at Your Fingertips"
-
+> Pix: "Pixel Art at Your Fingertips, literally!"
 
 ---
 
