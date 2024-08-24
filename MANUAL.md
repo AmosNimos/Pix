@@ -2,6 +2,8 @@
 
 # PIX - USER MANUAL
 
+> Note all of the key mapping can be change by loading a keymap file see the vim.key for an example.
+
 ### Canvas and Palette Basics:
 - **Canvas**: The drawable area where you can place pixels.
 - **Palette**: The available colors. You can select a color using the number keys (`0-9`). The palette can be loaded from a file as a list of hex color values.
@@ -68,6 +70,8 @@ Your drawing program offers a versatile palette system with the following featur
 - **`=`**: Increase the current color value.
 - **`-`**: Decrease the current color value.
 - **`H`**: Enter a custom hex value for the current color. (In development)
+- **`M`**: Moving the horizontal mirror offset
+- **`m`**: Moving the vertical mirror offset
 
 #### Tool Selection:
 - **`Shift` + `1-7`**: Select a tool from the tool list:
@@ -120,5 +124,6 @@ Your drawing program offers a versatile palette system with the following featur
 - **`-W` <width>**: Set the width of the canvas if starting with a blank image. Must be followed by an integer value.
 
 - **`-P` <palette_file>**: Load a custom hex color palette from a file. Defaults to `pix.hex` if no file is specified.
+
 
 
