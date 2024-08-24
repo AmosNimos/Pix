@@ -39,6 +39,8 @@ default_keymap = {
     "bucket_fill": [ord('b')],
     "toggle_horizontal_mirroring": [ord('h')],
     "toggle_vertical_mirroring": [ord('v')],
+    "move_horizontal_mirroring": [ord('M')],
+    "move_vertical_mirroring": [ord('m')],
     "hex_prompt": [ord('H')],
     "hex_export": [ord('E')],
 }
@@ -91,6 +93,8 @@ class Drawing:
         self.rect_pen=False
         self.tool_id=0
         self.tool_count=6
+        self.mirror_x_offset=0
+        self.mirror_y_offset=0
         # for x2 and y2 you could use cursor_x and cursor_y I think.
         self.x1=self.x2=self.y1=self.y2=-1     
         self.background_color=background
@@ -242,11 +246,18 @@ class Drawing:
     def draw_pixel(self):
         self.image.putpixel((self.cursor_x, self.cursor_y), self.color)
         if self.mirror_h:
-            self.image.putpixel((self.width - 1 - self.cursor_x, self.cursor_y), self.color)
+            mx=self.width + self.mirror_x_offset - 1 - self.cursor_x
+            if (mx<self.width):
+                self.image.putpixel((mx , self.cursor_y), self.color)
         if self.mirror_v:
-            self.image.putpixel((self.cursor_x, self.height - 1 - self.cursor_y), self.color)
+            my=self.height +self.mirror_y_offset - 1 - self.cursor_y
+            if (my<self.height):
+                self.image.putpixel((self.cursor_x, my), self.color)
         if self.mirror_h and self.mirror_v:
-            self.image.putpixel((self.width - 1 - self.cursor_x, self.height - 1 - self.cursor_y), self.color)
+            my=self.height +self.mirror_y_offset - 1 - self.cursor_y
+            mx=self.width + self.mirror_x_offset - 1 - self.cursor_x
+            if (mx<self.width) and (my<self.height):
+                self.image.putpixel((mx, my), self.color)
 
     def set_pixel(self,x,y,color=-1):
         if color == -1:
@@ -495,14 +506,14 @@ class Drawing:
                             char = '.'
                         else:
                             char = '█'
-                    elif (img_x == int(self.width / 2) and self.mirror_h):
+                    elif (img_x == int(self.width / 2)+int(self.mirror_x_offset/2) and self.mirror_h):
                         # Vertical guideline for mirror mode
                         char = '|'
                         if (r + g + b == 0):
                             color_id = 3
                         else:
                             color_id = closest
-                    elif (img_y == int(self.height / 2) and self.mirror_v):
+                    elif (img_y == int(self.height / 2)+int(self.mirror_y_offset/2) and self.mirror_v):
                         # Horizontal guideline for mirror mode
                         char = '-'
                         if (r + g + b == 0):
@@ -739,15 +750,12 @@ class Drawing:
 
     # use the color wheel from the color picker class
     def save_image(self, filename=None, confirm="n"):
+        new_filename=""
         if filename is None:
             curses.endwin()  # End curses mode to allow normal input
             filename = input("Enter filename (default 'out.png'): ").strip()
             if not filename:
                 filename = "out.png"
-            if not filename.endswith('.png'):
-                filename += '.png'
-            # Replace spaces with underscores and convert to lowercase
-            filename = filename.replace(' ', '_').lower()
             #curses.setupterm()  # Restart curses mode
             confirm="y"
 
@@ -758,8 +766,14 @@ class Drawing:
                 return 0            
             new_filename = input("Enter filename (default '"+str(filename)+"'): ").strip()
             
-            if new_filename != "":
-                filename=new_filename
+        if new_filename != "":
+            filename=new_filename
+
+        # Replace spaces with underscores and convert to lowercase
+        filename = filename.replace(' ', '_').lower()
+
+        if not filename.endswith('.png'):
+            filename += '.png'
             
         if str(confirm.lower()) == "y":
             self.image.save(filename)
@@ -794,6 +808,19 @@ class Drawing:
 def handle_input(key, drawing, keymap):
     if key in map(ord, '0123456789'):
         drawing.set_color(int(chr(key)))
+        
+    elif key in keymap['move_horizontal_mirroring']:
+        if (drawing.mirror_x_offset < int(drawing.width-6)):
+            drawing.mirror_x_offset+=2
+        else:
+            drawing.mirror_x_offset=-int(drawing.width-4)
+
+    elif key in keymap['move_vertical_mirroring']:
+        if (drawing.mirror_y_offset < int(drawing.height-6)):
+            drawing.mirror_y_offset+=2
+        else:
+            drawing.mirror_y_offset=-int(drawing.height-4)
+
     elif key in keymap['move_up']:
         drawing.move_cursor('UP')
     elif key in keymap['move_down']:
