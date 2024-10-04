@@ -1,7 +1,11 @@
 #!/bin/bash
 
 if [[ -n "$1" ]]; then
-    commit_description=" : $1"
+    if [[ -f "$1" ]]; then
+        commit_description=" : $(cat $1)"
+    else
+        commit_description=" : $1"
+    fi
 fi
 
 cat ../token.txt | xclip -selection clipboard
