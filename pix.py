@@ -951,7 +951,7 @@ def main(stdscr):
     canvas_height = args.height if args.height else 64
 
     #background=args.background
-    drawing = Drawing(stdscr, filename=filename, width=canvas_width, background=-1, palette=palette)
+    drawing = Drawing(stdscr, filename=filename, width=canvas_width, height=canvas_height, background=-1, palette=palette)
     drawing.update_cursor()  # Initial cursor update
     
     def signal_handler(sig, frame):
