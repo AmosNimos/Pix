@@ -13,7 +13,6 @@ from collections import Counter
 
 # [TODO] :
 # - Fix the ellipse tool sometime not being pixel accurate.
-# - Add customizable keymapping options
 
 # Default key bindings
 default_keymap = {
@@ -22,6 +21,7 @@ default_keymap = {
     "move_left": [curses.KEY_LEFT, ord('a')],
     "move_right": [curses.KEY_RIGHT, ord('d')],
     "perform_action": [ord(' '), ord('\n'), ord('x')],
+    "undo_action": [ord('u')],
     "save_and_quit": [ord('q')],
     "save_with_confirm": [ord('Q')],
     "toggle_info_bar": [ord('g')],
@@ -859,7 +859,9 @@ def handle_input(key, drawing, keymap):
     elif key in keymap['save_and_quit']:
         drawing.save_image('pix.save.png')
         return False  # Quit
-
+    elif key in keymap['undo_action']:  # 'e' to save and quit
+        drawing.load_screenshot() # load variable screenshot to current image
+        
     elif key in keymap['save_with_confirm']:
         drawing.save_image('pix.save.png', confirm="y")
         return False  # Quit
