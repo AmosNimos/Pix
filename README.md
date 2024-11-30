@@ -1,6 +1,7 @@
 <img src="./pix.png" alt="./PIX">
 
-> Pixel-art Independent of X11 or P.I.X for short
+> Pixel-art Independent of X11 or P.I.X for short, or for fans of recursions PIX also stands for: Pix is Independent of X. 
+
 
 Welcome to **Pix**, arguably the pinnacle of CLI pixel art tools!
 
@@ -10,11 +11,13 @@ Pix is a minimalist, keyboard-only pixel art editor with a basic CLI interface. 
 
 Pix is meticulously designed for 2D pixel art, operating effortlessly in terminal emulators like bash. Developed in Python and licensed under the [AGPLv3 License](./LICENSE), Pix is your streamlined command-line solution for crafting and editing pixel art. It’s stripped of unnecessary bloat while delivering the most essential features. Pix is the most basic tool for terminal-based pixel art creation in color!
 
-
 ## Mindset
 
-If limitations fuel creativity, then prepare to experience one of the most creatively invigorating pieces of software in your lifetime. Welcome to Pix—where less is more, and imagination knows no bounds! Some ask, "Why reinvent the wheel?" To which I respond, "Wheels? Who needs them!" Pix isn't about sticking to the familiar; it's about blazing a new trail. Why settle for the mundane when you can craft your masterpiece with a tool that’s as innovative as your creativity?
+Why does PIX exist?
 
+Because I sincerely believe that: Everything that can be done in the terminal, should.
+
+If limitations fuel creativity, then prepare to experience one of the most creatively invigorating pieces of software in your lifetime. Welcome to Pix—where less is more, and imagination knows no bounds! Some ask, "Why reinvent the wheel?" To which I respond, "Wheels? Who needs them!" Pix isn't about sticking to the familiar; it's about blazing a new trail. Why settle for the mundane when you can craft your masterpiece with a tool that’s as innovative as your creativity?
 
 ## Made in pix:
 
@@ -29,6 +32,19 @@ I whipped up these examples back when Pix was barely holding itself together wit
 ## Features
 
 Did you hear that Pix supports color? That’s right—up to 8 glorious colors at your fingertips! Forget about mice and other fancy equipment! Pix brings you the sophistication of keyboard controls only, demonstrating that you don’t need extravagant gadgets or cluttered interfaces to create stunning art. It’s a testament to the elegance of simplicity, where every stroke is guided by the precision of your keyboard. No mouse? No problem! With Pix, you’re in control, and your creativity knows no bounds. Embrace the future of pixel art with a touch of classic charm—Pix has it all!
+
+- Undo
+
+- Save/export
+
+- Load/Import
+
+- Customizable pallet
+
+- Customizable keymapping
+
+- Set Image size (crop tool currently in development)
+
 
 **Additionally:**
 Pix lets you load .hex files, just like those you find on sites like [Lospec](https://lospec.com/), or even create your own!
@@ -52,7 +68,8 @@ Pix lets you load .hex files, just like those you find on sites like [Lospec](ht
 
 > (Who knew a Line Tool was for lines? Genius, right?)
 
-- **Bucket Fill:** Rapidly fill areas with your chosen color, with even more excitement on the way! (Forget the bucket thing; it fills the area under the cursor with the selected color. Just play with it and you’ll get the hang of it. I’m not writing a “For Dummies” guide—figure it out yourself!)
+- **Bucket Fill:** Rapidly fill areas with your chosen color, with even more excitement on the way! 
+> (Forget the bucket thing; it fills the area under the cursor with the selected color. Just play with it and you’ll get the hang of it. I’m not writing a “For Dummies” guide—figure it out yourself!)
 - **Copy tool:** To sample any color from the canvas. 
 
 > (Because “Pipette” and “Pick” both start with P, and we can't have that. I thought about calling it the “Clone Tool,” but “Copy” works too. Missed opportunity, but hey. )

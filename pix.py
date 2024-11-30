@@ -12,9 +12,13 @@ import math
 from collections import Counter
 
 # [TODO] :
+# - first argument is file name (for output)
+# - e export to the filename passed or ask for one
 # - Fix the ellipse tool sometime not being pixel accurate.
+# - Command mode for crop, guides, rescaling, precise placement, pattern, effect, hue shift, copy and more
 
 # Default key bindings
+
 default_keymap = {
     "move_up": [curses.KEY_UP, ord('w')],
     "move_down": [curses.KEY_DOWN, ord('s')],
@@ -22,6 +26,7 @@ default_keymap = {
     "move_right": [curses.KEY_RIGHT, ord('d')],
     "perform_action": [ord(' '), ord('\n'), ord('x')],
     "undo_action": [ord('u')],
+    "export_and_quit": [ord('e')],
     "save_and_quit": [ord('q')],
     "save_with_confirm": [ord('Q')],
     "toggle_info_bar": [ord('g')],
@@ -45,6 +50,8 @@ default_keymap = {
     "hex_export": [ord('E')],
 }
 
+DEFAULT_SIZE=32 # Default image size
+
 def load_keymap(filename, keymap):
     key_aliases = {
         "space": ord(' '),
@@ -56,6 +63,10 @@ def load_keymap(filename, keymap):
         "<": ord('<'),
         # Add more aliases if needed
     }
+
+    if not os.path.exists(filename):
+        print(f"Keymap file '{filename}' not found. Using default key bindings.")
+        return keymap
 
     try:
         with open(filename, 'r') as file:
@@ -73,15 +84,12 @@ def load_keymap(filename, keymap):
                         else:
                             raise ValueError(f"Unknown key alias: {key}")
 
-                    if action in keymap:
-                        keymap[action] = key_list
-    except FileNotFoundError:
-        print(f"Keymap file '{filename}' not found. Using default key bindings.")
+                    keymap[action] = key_list  # No need to check if action exists
+
     except ValueError as e:
         print(f"Error in keymap file: {e}")
 
-    return keymap
-    
+    return keymap    
 
 class Drawing:
     def __init__(self, stdscr, width=64, height=64, view_size=64, filename=None, background=1, palette="palette.hex"):
@@ -423,23 +431,52 @@ class Drawing:
             stack.append((cx, cy + 1))
             stack.append((cx, cy - 1))
 
+#    def update_cursor(self):
+#        self.stdscr.clear()
+#        self.display_view()
+#                                        
+#        if (self.pen_down):
+#            char='◘'
+#        else:
+#            char="•"
+#
+#        if self.color_pair != 1: # if black turn to white (cause black on black ain't visible)
+#            color = curses.color_pair(self.color_pair) # set to active color
+#        else:
+#            color = curses.color_pair(2) | curses.A_REVERSE # set to white
+#
+#
+#        self.stdscr.addch(self.view_size // 2, self.view_size // 2, char, color)
+#        self.stdscr.move(self.view_size // 2, self.view_size // 2)
+
     def update_cursor(self):
         self.stdscr.clear()
         self.display_view()
-                                        
-        if (self.pen_down):
-            char='◘'
+        
+        # Get the terminal size
+        height, width = self.stdscr.getmaxyx()
+
+        # Ensure the cursor stays within bounds
+        center_y = min(self.view_size // 2, height - 1)
+        center_x = min(self.view_size // 2, width - 1)
+        
+        if self.pen_down:
+            char = '◘'
         else:
-            char="•"
+            char = "•"
 
-        if self.color_pair != 1: # if black turn to white (cause black on black ain't visible)
-            color = curses.color_pair(self.color_pair) # set to active color
+        if self.color_pair != 1:  # if black turn to white (cause black on black ain't visible)
+            color = curses.color_pair(self.color_pair)  # set to active color
         else:
-            color = curses.color_pair(2) | curses.A_REVERSE # set to white
+            color = curses.color_pair(2) | curses.A_REVERSE  # set to white
 
-
-        self.stdscr.addch(self.view_size // 2, self.view_size // 2, char, color)
-        self.stdscr.move(self.view_size // 2, self.view_size // 2)
+        try:
+            # Place character at adjusted center position
+            self.stdscr.addch(center_y, center_x, char, color)
+            self.stdscr.move(center_y, center_x)
+        except curses.error:
+            # Optionally handle if terminal is too small even after adjustment
+            pass  # Safely ignore errors if terminal too small
 
     def get_closest_color_id(self, rr, gg, bb, threshold=30):
         for i, (r, g, b) in enumerate(self.colors):
@@ -949,8 +986,9 @@ def main(stdscr):
     stdscr.clear()
 
     # so if args.width is passed make drawing.width equal to args.width if not argument passed use 64 as the default
-    canvas_width = args.width if args.width else 64
-    canvas_height = args.height if args.height else 64
+    #DEFAULT_SIZE = args.size if args.height
+    canvas_width = args.width if args.width else DEFAULT_SIZE
+    canvas_height = args.height if args.height else DEFAULT_SIZE
 
     #background=args.background
     drawing = Drawing(stdscr, filename=filename, width=canvas_width, height=canvas_height, background=-1, palette=palette)
@@ -988,8 +1026,9 @@ def is_valid_img(file_name):
         
 parser = argparse.ArgumentParser(description='CLI drawing program.')
 parser = argparse.ArgumentParser(usage='(w,a,s,d) keys to move the cursor, (e) to export, (0 - 9) change the color, (b) bucket fill, (h,v) mirror pen, (space) toggle pen, (enter) place single pixel, (u) Undo')
-parser.add_argument('-W','--width', type=int, default=64, help='Width of the image. (default: 64)')
-parser.add_argument('-H','--height', type=int, default=64, help='Height of the image (default; 64).')
+parser.add_argument('-W','--width', type=int, default=DEFAULT_SIZE, help='Width of the image. (default: '+str(DEFAULT_SIZE)+').')
+parser.add_argument('-H','--height', type=int, default=DEFAULT_SIZE, help='Height of the image (default; '+str(DEFAULT_SIZE)+').')
+parser.add_argument('-S','--size', type=int, default=DEFAULT_SIZE, help='Height and Width of the image.')
 parser.add_argument('-f','--file', type=str, help='File to load.')
 parser.add_argument('-p','--palette', type=str, help='palette file (default; palette.hex).')
 parser.add_argument('-k','--keymap', type=str, default="default.key", help='Keymap file (default: default.key).')
